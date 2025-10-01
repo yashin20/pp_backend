@@ -32,6 +32,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket' //Web Socket
+
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.5' // API
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5' // 구현체
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // JSON 파서
+
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'

@@ -41,7 +41,7 @@ public class MemberDto {
     }
 
     @Data
-    public static class createRequest {
+    public static class CreateRequest {
 
         @NotBlank(message = "아이디는 필수 입력 항목입니다.")
         @Size(min = 6, max = 12, message = "아이디는 6~12자리 입니다.")
@@ -74,5 +74,11 @@ public class MemberDto {
                     this.role
             );
         }
+    }
+
+    @Data
+    public static class LoginRequest {
+        private String username;
+        private String password;
     }
 }

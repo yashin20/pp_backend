@@ -19,7 +19,7 @@ public class MemberService {
 
     //1. 회원가입 로직
     @Transactional
-    public MemberDto.Response createMember(MemberDto.createRequest request) {
+    public MemberDto.Response createMember(MemberDto.CreateRequest request) {
         //1-1. 중복 검사 (username, nickname, email)
         validateDuplicateMember(
                 request.getUsername(),

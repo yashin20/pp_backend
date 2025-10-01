@@ -16,6 +16,7 @@ public class MemberDetails implements UserDetails {
     private String username;
     private String password;
     private String nickname;
+    private String email;
 
     private Collection<? extends GrantedAuthority> authorities;
 
@@ -24,6 +25,7 @@ public class MemberDetails implements UserDetails {
         this.username = member.getUsername();
         this.password = member.getPassword();
         this.nickname = member.getNickname();
+        this.email = member.getEmail();
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + member.getMemberRole().name()));
     }
 

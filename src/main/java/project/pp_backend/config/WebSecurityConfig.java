@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * RESTful API Backend 용
@@ -23,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /*PasswordEncoder Bean 등록 - password 암호화 (방식 - BCryptPasswordEncoder)*/
     @Bean
@@ -62,7 +64,13 @@ public class WebSecurityConfig {
                                 // 그 외 모든 요청은 불허
                                 .anyRequest().denyAll()
                 )
-                .userDetailsService(customUserDetailsService);
+                .userDetailsService(customUserDetailsService)
+
+                //5. JWT 필터 등록
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtTokenProvider), //필터 인스턴스 생성
+                        UsernamePasswordAuthenticationFilter.class //Username/Password 로그인 필터보다 먼저 실행되도록 설정
+                );
 
         return http.build();
     }
