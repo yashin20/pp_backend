@@ -25,12 +25,20 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30; // 30분
+    private final long ACCESS_TOKEN_EXPIRE_TIME;
+    private final long REFRESH_TOKEN_EXPIRE_TIME;
     private final Key key;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
+    public JwtTokenProvider(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.access-token-expiration-milliseconds}") long accessTokenExpireTime,
+            @Value("${jwt.refresh-token-expiration-milliseconds}") long refreshTokenExpireTime
+    ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.ACCESS_TOKEN_EXPIRE_TIME = accessTokenExpireTime;
+        this.REFRESH_TOKEN_EXPIRE_TIME = refreshTokenExpireTime;
+
     }
 
     /**
@@ -52,12 +60,17 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512) // 시그니처 생성
                 .compact();
 
-        // 3. Refresh Token 생성 (여기서는 간단히 Access Token만 반환)
-        // 실제로는 더 긴 만료 시간으로 Refresh Token을 별도로 생성해야 합니다.
+        // 3. Refresh Token 생성
+        String refreshToken = Jwts.builder()
+                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
 
         return TokenDto.Response.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .accessTokenExpiresIn(ACCESS_TOKEN_EXPIRE_TIME)
                 .build();
     }
 
@@ -90,10 +103,9 @@ public class JwtTokenProvider {
      */
     public boolean validateToken(String token) {
         try {
-            // [수정 핵심]: Jwts.parser().setSigningKey(key) 뒤에 .build()를 추가해야 합니다.
-            Jwts.parser() // 0.12.5 버전에서는 Jwts.parserBuilder() 사용 가능 (또는 Jwts.parser())
-                    .setSigningKey(key) // Secret Key 설정
-                    .build()            // <--- 이 메서드를 반드시 호출해야 합니다!
+            Jwts.parser()
+                    .setSigningKey(key)
+                    .build()
                     .parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {

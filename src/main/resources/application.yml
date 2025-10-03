@@ -1,9 +1,11 @@
 spring:
+  profiles:
+    include:
+      - config
+      - secret
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/pp
-    username: root
-    password: 12345678
 
   jpa:
     hibernate:

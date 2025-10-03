@@ -55,8 +55,8 @@ public class WebSecurityConfig {
                         authorizeRequests
                                 //** 테스트 코드 임시 허용
                                 .requestMatchers("/api/test/**").permitAll()
-                                // 인증 엔드포인트는 모두 허용
-                                .requestMatchers("/api/auth/**", "/ws-stomp/**").permitAll()
+                                // 인증 엔드포인트는 모두 허용 (회원가입 엔드포인트)
+                                .requestMatchers("/api/auth/**", "/ws-stomp/**", "/api/members/register").permitAll()
                                 // 관리자 API는 특정 권한 필요
                                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                                 // 나머지 /api/** 경로는 인증된 사용자만 접근 가능
