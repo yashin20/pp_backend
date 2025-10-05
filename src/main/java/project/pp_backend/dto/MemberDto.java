@@ -81,4 +81,17 @@ public class MemberDto {
         private String username;
         private String password;
     }
+
+
+    @Data
+    public static class UpdateRequest {
+
+        @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
+        @Size(min = 4, max = 12, message = "닉네임은 4자 이상 12자 이하로 입력해주세요.")
+        @Pattern(regexp = "^\\S+$", message = "닉네임은 공백을 포함할 수 없습니다.")
+        private String nickname;
+
+        @Email(message = "이메일 형식이 올바르지 않습니다.")
+        private String email; //비밀번호 복구'에만' 사용
+    }
 }

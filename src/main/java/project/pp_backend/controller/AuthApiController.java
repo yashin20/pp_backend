@@ -40,7 +40,7 @@ public class AuthApiController {
      */
     @PostMapping("/reissue")
     public ResponseEntity<TokenDto.Response> reissue(@Valid @RequestBody TokenDto.Request request) {
-        TokenDto.Response newToken  = authService.reissue(request);
+        TokenDto.Response newToken = authService.reissue(request);
         return ResponseEntity.ok(newToken);
     }
 
@@ -51,7 +51,7 @@ public class AuthApiController {
      * @return 200 OK
      */
     @PostMapping("/logout")
-    public ResponseEntity<TokenDto.Response> logout(@Valid @RequestBody TokenDto.Request request) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody TokenDto.Request request) {
         //AuthService를 통해 Redis에 저장된 RefreshToken 삭제
         authService.logout(request);
         return ResponseEntity.ok().build();

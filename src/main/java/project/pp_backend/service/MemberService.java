@@ -8,6 +8,7 @@ import org.springframework.util.StringUtils;
 import project.pp_backend.dto.MemberDto;
 import project.pp_backend.entity.Member;
 import project.pp_backend.exception.DataAlreadyExistsException;
+import project.pp_backend.exception.DataNotFoundException;
 import project.pp_backend.repository.MemberRepository;
 
 @Service
@@ -40,6 +41,7 @@ public class MemberService {
         return new MemberDto.Response(savedMember);
     }
 
+    //중복검사 메서드
     private void validateDuplicateMember(String username, String nickname, String email) {
         // 1. Username 중복 검사
         if (StringUtils.hasText(username)) {
@@ -61,6 +63,57 @@ public class MemberService {
                 throw new DataAlreadyExistsException("이미 존재하는 email 입니다.");
             }
         }
+    }
+
+
+    //2. 회원 정보 조회
+    public MemberDto.Response getMemberById(Long id) {
+        //1. ID 기반 Member 조회
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
+
+        //2. return DTO
+        return new MemberDto.Response(member);
+    }
+
+    //3. 회원 정보 수정
+    @Transactional
+    public MemberDto.Response updateMember(Long memberId, MemberDto.UpdateRequest request) {
+        //1. ID 기반 Member 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
+
+        //2. 회원 정보 수정 (nickname)
+        if (StringUtils.hasText(request.getNickname()) && !member.getNickname().equals(request.getNickname())) {
+            if (memberRepository.findByNickname(request.getNickname()).isPresent()) {
+                throw new DataAlreadyExistsException("이미 존재하는 닉네임 입니다.");
+            }
+            member.updateNickname(request.getNickname());
+        }
+
+        //3. 회원 정보 수정 (email)
+        if (StringUtils.hasText(request.getEmail()) && !member.getEmail().equals(request.getEmail())) {
+            if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new DataAlreadyExistsException("이미 존재하는 이메일 입니다.");
+            }
+            member.updateEmail(request.getEmail());
+        }
+
+        //4. 변경된 회원 정보 반환
+        return new MemberDto.Response(member);
+    }
+
+    //비밀번호 수정 메서드
+
+    //4. 회원 삭제
+    @Transactional
+    public Long deleteMember(Long memberId) {
+        //1. 삭제할 회원 조회
+        Member memberToDelete = memberRepository.findById(memberId)
+                .orElseThrow(() -> new DataNotFoundException("삭제할 회원(Member)을 찾을 수 없음"));
+        //2. 회원 삭제
+        memberRepository.delete(memberToDelete);
+        return memberId;
     }
 
 }

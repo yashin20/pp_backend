@@ -2,6 +2,7 @@ package project.pp_backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,13 +21,13 @@ public class MemberApiController {
      * 1. 회원가입 엔드포인트
      * POST /api/members/register
      * @param request ID, PW, 닉네임, 이메일 등을 포함하는 회원가입 요청 DTO
-     * @return 성공적으로 생성된 회원 ID
+     * @return 생성된 회원 정보 (MemberDto.Response)
      */
     @PostMapping("/register")
-    public ResponseEntity<Long> register(@Valid @RequestBody MemberDto.CreateRequest request) {
+    public ResponseEntity<MemberDto.Response> register(@Valid @RequestBody MemberDto.CreateRequest request) {
         //회원가입 처리
         MemberDto.Response response = memberService.createMember(request);
-        return ResponseEntity.ok(response.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); //HTTP 201 Created 응답
     }
 
     /** *****TEST 용 엔드포인트야!
@@ -45,8 +46,27 @@ public class MemberApiController {
         }
 
         String username = authentication.getName();
-
         return ResponseEntity.ok("인증 성공! 현재 로그인 ID: " + username);
     }
+
+    /**
+     * 2. 사용자 정보 (로그인 회원 정보 - GET)
+     * GET - /api/members/me
+     * AccessToken을 포함한 요청만 접근 가능
+     * @return 회원 정보 - MemberDto.Response
+     */
+
+    /**
+     * 3. 회원 정보 수정 (PATCH)
+     * PATCH - /api/members/me
+     * @param request 수정할 닉네임, 이메일 등의 정보를 포함하는 DTO
+     * @return 업데이트된 회원 정보 - MemberDto.Response
+     */
+
+    /**
+     * 4. 회원 탈퇴 (Delete)
+     * DELETE - /api/members/me
+     * @return 성공 / 실패 코드
+     */
 
 }
