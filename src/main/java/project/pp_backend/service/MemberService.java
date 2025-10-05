@@ -66,7 +66,7 @@ public class MemberService {
     }
 
 
-    //2. 회원 정보 조회
+    //2-1. 회원 정보 조회 (id 기반)
     public MemberDto.Response getMemberById(Long id) {
         //1. ID 기반 Member 조회
         Member member = memberRepository.findById(id)
@@ -75,12 +75,25 @@ public class MemberService {
         //2. return DTO
         return new MemberDto.Response(member);
     }
+    //2-1. 회원 정보 조회 (username 기반)
+    public MemberDto.Response getMemberByUsername(String username) {
+        //1. ID 기반 Member 조회
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
+
+        //2. return DTO
+        return new MemberDto.Response(member);
+    }
 
     //3. 회원 정보 수정
     @Transactional
-    public MemberDto.Response updateMember(Long memberId, MemberDto.UpdateRequest request) {
+    public MemberDto.Response updateMember(String username, MemberDto.UpdateRequest request) {
         //1. ID 기반 Member 조회
-        Member member = memberRepository.findById(memberId)
+//        Member member = memberRepository.findById(memberId)
+//                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
+
+        //1. Username 기반 Member 조회
+        Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
 
         //2. 회원 정보 수정 (nickname)
@@ -103,17 +116,49 @@ public class MemberService {
         return new MemberDto.Response(member);
     }
 
-    //비밀번호 수정 메서드
+    //3-2. 비밀번호 수정 메서드
+    @Transactional
+    public String updatePassword(String username, MemberDto.PasswordRequest request) {
+        //1. Username 기반 Member 조회
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
+
+        //2. 현재 비밀번호가 올바른가?
+        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+            throw new SecurityException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        //3. newPassword == repeatPassword
+        if (!request.getNewPassword().equals(request.getRepeatPassword())) {
+            throw new SecurityException("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 4. 새로운 비밀번호가 현재 비밀번호와 동일한지 확인
+        if (request.getNewPassword().equals(request.getCurrentPassword())) {
+            throw new SecurityException("새 비밀번호는 현재 비밀번호와 달라야 합니다.");
+        }
+
+        // 5. 성공시, 새 비밀번호 암호화 후 업데이트
+        String newEncodedPassword = passwordEncoder.encode(request.getNewPassword());
+        member.updatePassword(newEncodedPassword);
+
+        // 6. 변경 회원 username 반환
+        return username;
+    }
 
     //4. 회원 삭제
     @Transactional
-    public Long deleteMember(Long memberId) {
-        //1. 삭제할 회원 조회
-        Member memberToDelete = memberRepository.findById(memberId)
-                .orElseThrow(() -> new DataNotFoundException("삭제할 회원(Member)을 찾을 수 없음"));
+    public String deleteMember(String username) {
+        //1. ID 기반 Member 조회
+//        Member memberToDelete = memberRepository.findById(memberId)
+//                .orElseThrow(() -> new DataNotFoundException("삭제할 회원(Member)을 찾을 수 없음"));
+
+        //1. Username 기반 Member 조회
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
         //2. 회원 삭제
-        memberRepository.delete(memberToDelete);
-        return memberId;
+        memberRepository.delete(member);
+        return username;
     }
 
 }

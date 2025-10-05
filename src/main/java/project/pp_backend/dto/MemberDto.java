@@ -85,7 +85,6 @@ public class MemberDto {
 
     @Data
     public static class UpdateRequest {
-
         @NotBlank(message = "닉네임은 필수 입력 항목입니다.")
         @Size(min = 4, max = 12, message = "닉네임은 4자 이상 12자 이하로 입력해주세요.")
         @Pattern(regexp = "^\\S+$", message = "닉네임은 공백을 포함할 수 없습니다.")
@@ -93,5 +92,23 @@ public class MemberDto {
 
         @Email(message = "이메일 형식이 올바르지 않습니다.")
         private String email; //비밀번호 복구'에만' 사용
+    }
+
+    @Data
+    public static class PasswordRequest {
+        @NotBlank(message = "기존 비밀번호는 필수 입력 항목입니다.")
+        @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        private String currentPassword;
+
+        @NotBlank(message = "새 비밀번호는 필수 입력 항목입니다.")
+        @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        private String newPassword;
+
+        @NotBlank(message = "새 비밀번호는 필수 입력 항목입니다.")
+        @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        private String repeatPassword;
     }
 }

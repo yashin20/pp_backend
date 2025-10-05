@@ -20,6 +20,7 @@ public class MemberApiController {
     /**
      * 1. 회원가입 엔드포인트
      * POST /api/members/register
+     *
      * @param request ID, PW, 닉네임, 이메일 등을 포함하는 회원가입 요청 DTO
      * @return 생성된 회원 정보 (MemberDto.Response)
      */
@@ -30,24 +31,26 @@ public class MemberApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response); //HTTP 201 Created 응답
     }
 
-    /** *****TEST 용 엔드포인트야!
+    /**
+     * ****TEST 용 엔드포인트야!
      * 2. 인증된 사용자 정보 조회 엔드포인트
      * GET /api/members/my
      * AccessToken을 포함한 요청만 접근 가능
+     *
      * @return 현재 인증된 사용자의 ID(username)와 닉네임
      */
-    @GetMapping("/my")
-    public ResponseEntity<String> getMyInfo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        //AccessToken이 없거나 유효하지 않아 인증에 실패한 경우
-        if (authentication == null || authentication.getName().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body("Unauthorized: 인증 정보가 유효하지 않습니다.");
-        }
-
-        String username = authentication.getName();
-        return ResponseEntity.ok("인증 성공! 현재 로그인 ID: " + username);
-    }
+//    @GetMapping("/my")
+//    public ResponseEntity<String> getMyInfo() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        //AccessToken이 없거나 유효하지 않아 인증에 실패한 경우
+//        if (authentication == null || authentication.getName().equals("anonymousUser")) {
+//            return ResponseEntity.status(401).body("Unauthorized: 인증 정보가 유효하지 않습니다.");
+//        }
+//
+//        String username = authentication.getName();
+//        return ResponseEntity.ok("인증 성공! 현재 로그인 ID: " + username);
+//    }
 
     /**
      * 2. 사용자 정보 (로그인 회원 정보 - GET)
@@ -55,6 +58,16 @@ public class MemberApiController {
      * AccessToken을 포함한 요청만 접근 가능
      * @return 회원 정보 - MemberDto.Response
      */
+    @GetMapping("/me")
+    public ResponseEntity<MemberDto.Response> getMyInfo() {
+        //1. 토큰에서 사용자 이름(username) 추출
+        String username = getAuthenticatedUsername();
+
+        //2. username 기반 Member 정보 조회
+        MemberDto.Response response = memberService.getMemberByUsername(username);
+
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * 3. 회원 정보 수정 (PATCH)
@@ -62,11 +75,46 @@ public class MemberApiController {
      * @param request 수정할 닉네임, 이메일 등의 정보를 포함하는 DTO
      * @return 업데이트된 회원 정보 - MemberDto.Response
      */
+    @PatchMapping("/me")
+    public ResponseEntity<MemberDto.Response> updateMember(@Valid @RequestBody MemberDto.UpdateRequest request) {
+        //1. 토큰에서 사용자 이름(username) 추출
+        String username = getAuthenticatedUsername();
+
+        //2. username 기반 Member 정보 수정
+        MemberDto.Response response = memberService.updateMember(username, request);
+
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * 4. 회원 탈퇴 (Delete)
      * DELETE - /api/members/me
-     * @return 성공 / 실패 코드
+     * @return 204 No Content (성공)
      */
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMember() {
+        //1. 토큰에서 사용자 이름(username) 추출
+        String username = getAuthenticatedUsername();
+
+        //2. username 기반 Member 삭제
+        memberService.deleteMember(username);
+
+        //204 No Content: 성공적 삭제 + 반환할 데이터가 없음 의미
+        return ResponseEntity.noContent().build();
+    }
+
+
+    //*********** Helper 메서드 **************
+    //현재 인증된(로그인된) 사용자 이름(username) 추출
+    private String getAuthenticatedUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //인증에 실패 했거나 토큰이 없는 경우
+        if (authentication == null || "anonymousUser".equals(authentication.getName())) {
+            throw new SecurityException("인증 정보가 유효하지 않습니다.");
+        }
+
+        return authentication.getName();
+    }
 
 }
