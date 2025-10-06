@@ -70,7 +70,7 @@ public class MemberApiController {
     }
 
     /**
-     * 3. 회원 정보 수정 (PATCH)
+     * 3-1. 회원 정보 수정 (PATCH)
      * PATCH - /api/members/me
      * @param request 수정할 닉네임, 이메일 등의 정보를 포함하는 DTO
      * @return 업데이트된 회원 정보 - MemberDto.Response
@@ -84,6 +84,25 @@ public class MemberApiController {
         MemberDto.Response response = memberService.updateMember(username, request);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 3-2. 비밀번호 수정 (PATCH)
+     * PATCH - /api/members/me/password
+     * @param request 현재 비밀번호, 새 비밀번호, 확인 비밀번호를 포함하는 DTO
+     * @return 200 OK (성공 시 본문 없음)
+     */
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody MemberDto.PasswordRequest request) {
+        // 1. 토큰에서 인증된 사용자 이름(username) 추출
+        String username = getAuthenticatedUsername();
+
+        // 2. 서비스에서 비밀번호 변경 처리 (현재 비밀번호 확인, 새 비밀번호 일치 확인 포함)
+        memberService.updatePassword(username, request);
+
+        // 3. 비밀번호 변경 성공 시 200 OK 반환 (본문 없음)
+        // 200 OK는 요청이 성공적으로 처리되었음을 의미합니다.
+        return ResponseEntity.ok().build();
     }
 
     /**
