@@ -1,8 +1,10 @@
 package project.pp_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
+@Getter
 public class RoomMember extends BaseEntity {
     @Id @GeneratedValue
     private Long id;
