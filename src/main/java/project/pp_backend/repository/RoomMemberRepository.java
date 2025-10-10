@@ -18,10 +18,19 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
      */
     void deleteByRoomId(Long roomId);
 
+    /**
+     * 특정 Room 에서 특정 회원의 참여 기록을 삭제 (채팅방 나가기 기능)
+     */
     void deleteByRoomIdAndMemberId(Long roomId, Long memberId);
 
     /**
      * 특정 방에 특정 회원이 이미 참가 중인지 확인
      */
     Optional<RoomMember> findByRoomIdAndMemberId(Long roomId, Long memberId);
+
+    //특정 채팅방에 소속된 회원의 수
+    long countByRoomId(Long roomId);
+
+    //특정 회원에 참가 중인 채팅방의 수
+    long countByMemberId(Long memberId);
 }
