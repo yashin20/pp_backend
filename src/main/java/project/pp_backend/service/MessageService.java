@@ -25,7 +25,7 @@ public class MessageService {
     private final RoomRepository roomRepository;
 
     //message 개수 임계값 (100개)
-    private static final long MESSAGE_COUNT_THRESHOLD = 20;
+    private static final long MESSAGE_COUNT_THRESHOLD = 100;
 
     //1. 메시지 생성
     @Transactional

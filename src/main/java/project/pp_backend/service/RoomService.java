@@ -88,6 +88,7 @@ public class RoomService {
      * 채팅방 퇴장을 통해 모든 회원이 채팅방에서 퇴장을 하면 그때 채팅방이 삭제됨.
      */
 
+
     //3. 채팅방 수정
     @Transactional
     public RoomDto.Response updateRoom(String username, Long roomId, RoomDto.UpdateRequest request) {
