@@ -1,15 +1,18 @@
 package project.pp_backend.config;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import project.pp_backend.entity.Member;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
 @Getter
+@NoArgsConstructor
 public class MemberDetails implements UserDetails {
 
     private Long id;

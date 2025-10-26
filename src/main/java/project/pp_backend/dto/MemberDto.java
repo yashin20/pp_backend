@@ -26,7 +26,7 @@ public class MemberDto {
             this.nickname = member.getNickname();
             this.createdAt = formatTime(member.getCreatedAt());
             this.updatedAt = formatTime(member.getUpdatedAt());
-            this.role = role;
+            this.role = member.getMemberRole().toString();
         }
 
         private String formatTime(LocalDateTime dateTime) {

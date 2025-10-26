@@ -2,6 +2,7 @@ package project.pp_backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import project.pp_backend.entity.Member;
 import project.pp_backend.entity.Message;
 import project.pp_backend.entity.MessageType;
@@ -34,12 +35,13 @@ public class MessageDto {
     }
 
     @Data
+    @NoArgsConstructor
     public static class CreateRequest {
         @NotBlank(message = "메시지가 입력되지 않았습니다.")
         private String content;
         private MessageType type;
-        private Long memberId;
         private Long roomId;
+        private String sender;
 
         //RequestDto -> Entity
         public Message toEntity(Member member, Room room) {

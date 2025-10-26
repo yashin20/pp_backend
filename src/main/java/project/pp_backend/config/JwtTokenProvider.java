@@ -29,16 +29,19 @@ public class JwtTokenProvider {
     private final long REFRESH_TOKEN_EXPIRE_TIME;
     private final Key key;
 
+    private final CustomUserDetailsService customUserDetailsService;
+
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-expiration-milliseconds}") long accessTokenExpireTime,
-            @Value("${jwt.refresh-token-expiration-milliseconds}") long refreshTokenExpireTime
+            @Value("${jwt.refresh-token-expiration-milliseconds}") long refreshTokenExpireTime,
+            CustomUserDetailsService customUserDetailsService
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.ACCESS_TOKEN_EXPIRE_TIME = accessTokenExpireTime;
         this.REFRESH_TOKEN_EXPIRE_TIME = refreshTokenExpireTime;
-
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     /**
@@ -93,7 +96,8 @@ public class JwtTokenProvider {
                         .collect(Collectors.toList());
 
         // 3. UserDetails 객체를 만들어서 Authentication 리턴 (SecurityContext 사용)
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        // loadUserByUsername()를 사용해 MemberDetails(principal) 객체를 가져옵니다.
+        UserDetails principal = customUserDetailsService.loadUserByUsername(claims.getSubject());
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }

@@ -1,6 +1,7 @@
 package project.pp_backend.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
@@ -23,7 +25,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with name: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("[CustomUserDetailsService] User not found with name: " + username));
+
+        log.info("📢 [USER DETAIL SERVICE] Member found: {}", member.getUsername());
 
         return new MemberDetails(member);
     }

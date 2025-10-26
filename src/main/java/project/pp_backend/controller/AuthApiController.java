@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import project.pp_backend.dto.MemberDto;
 import project.pp_backend.dto.TokenDto;
 import project.pp_backend.service.AuthService;
-import project.pp_backend.service.MemberService;
 
 @RestController
 @RequestMapping("/api/auth")
