@@ -88,9 +88,6 @@ public class MemberService {
     //3. 회원 정보 수정
     @Transactional
     public MemberDto.Response updateMember(String username, MemberDto.UpdateRequest request) {
-        //1. ID 기반 Member 조회
-//        Member member = memberRepository.findById(memberId)
-//                .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
 
         //1. Username 기반 Member 조회
         Member member = memberRepository.findByUsername(username)
