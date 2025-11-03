@@ -9,6 +9,9 @@ import project.pp_backend.entity.Member;
 import project.pp_backend.repository.FriendShipRepository;
 import project.pp_backend.repository.MemberRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -17,7 +20,18 @@ public class FriendShipService {
     final private MemberRepository memberRepository;
 
     /**
-     * friendShip 정보 조회
+     * friendShip Owner 기준 정보 조회
+     */
+    public List<FriendShipDto.Response> getFriendShipsByOwner(String ownerUsername) {
+        return friendShipRepository.findByOwnerUsername(ownerUsername)
+                .stream()
+                .map(FriendShipDto.Response::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * friendShip 단일 정보 조회
+     * @return : ResponseDto
      */
     public FriendShipDto.Response getFriendShip(String ownerUsername, String friendUsername) {
         return new FriendShipDto.Response(
@@ -38,7 +52,14 @@ public class FriendShipService {
         //2. friend 객체 찾기
         Member friend = memberRepository.findByUsername(request.getFriendUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
-
+        //※ 중복 체크
+        if (friendShipRepository.findByOwnerUsernameAndFriendUsername(
+                owner.getUsername(), friend.getUsername()
+        ).isPresent()){
+            throw new IllegalArgumentException(
+                    String.format("%s - %s: Friendship already exists", owner.getUsername(), friend.getUsername())
+            );
+        }
         //3. friendShip 객체 생성 및 저장
         FriendShip friendShip = request.toEntity(owner, friend);
         FriendShip savedEntity = friendShipRepository.save(friendShip);
@@ -54,7 +75,6 @@ public class FriendShipService {
     public void deleteFriendShip(String ownerUsername, String friendUsername) {
         FriendShip friendShip = friendShipRepository.findByOwnerUsernameAndFriendUsername(ownerUsername, friendUsername)
                 .orElseThrow(() -> new IllegalArgumentException("FriendShip not found"));
-
         friendShipRepository.delete(friendShip);
     }
 }

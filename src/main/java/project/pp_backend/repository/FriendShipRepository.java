@@ -3,6 +3,7 @@ package project.pp_backend.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import project.pp_backend.entity.FriendShip;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FriendShipRepository extends JpaRepository<FriendShip, Long> {
@@ -10,4 +11,6 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, Long> {
             String ownerUsername,
             String friendUsername
     );
+
+    List<FriendShip> findByOwnerUsername(String ownerUsername);
 }

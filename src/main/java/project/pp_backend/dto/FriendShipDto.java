@@ -34,4 +34,10 @@ public class FriendShipDto {
             return new FriendShip(owner, friend);
         }
     }
+
+    @Data
+    public static class DeleteRequest {
+        private String ownerUsername;
+        private String friendUsername;
+    }
 }
