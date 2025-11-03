@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import project.pp_backend.dto.FriendShipDto;
 import project.pp_backend.entity.FriendShip;
 import project.pp_backend.entity.Member;
+import project.pp_backend.exception.DataAlreadyExistsException;
 import project.pp_backend.repository.FriendShipRepository;
 import project.pp_backend.repository.MemberRepository;
 
@@ -48,15 +49,15 @@ public class FriendShipService {
     public FriendShipDto.Response createFriendShip(FriendShipDto.CreateRequest request) {
         //1. owner 객체 찾기
         Member owner = memberRepository.findByUsername(request.getOwnerUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Owner not found"));
+                .orElseThrow(() -> new DataAlreadyExistsException("Owner not found"));
         //2. friend 객체 찾기
         Member friend = memberRepository.findByUsername(request.getFriendUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Friend not found"));
+                .orElseThrow(() -> new DataAlreadyExistsException("Friend not found"));
         //※ 중복 체크
         if (friendShipRepository.findByOwnerUsernameAndFriendUsername(
                 owner.getUsername(), friend.getUsername()
         ).isPresent()){
-            throw new IllegalArgumentException(
+            throw new DataAlreadyExistsException(
                     String.format("%s - %s: Friendship already exists", owner.getUsername(), friend.getUsername())
             );
         }

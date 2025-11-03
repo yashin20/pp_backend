@@ -25,7 +25,6 @@ public class TokenDto {
     public static class Request {
         //만료된 Access Token
         private String accessToken;
-
         //유효성을 검증할 Refresh Token
         private String refreshToken;
     }
