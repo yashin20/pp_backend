@@ -1,6 +1,8 @@
 package project.pp_backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import project.pp_backend.entity.Member;
@@ -36,6 +38,8 @@ public class MessageDto {
 
     @Data
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class CreateRequest {
         @NotBlank(message = "메시지가 입력되지 않았습니다.")
         private String content;

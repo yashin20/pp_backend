@@ -1,6 +1,7 @@
 package project.pp_backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 import project.pp_backend.entity.Room;
 
@@ -25,6 +26,7 @@ public class RoomDto {
     }
 
     @Data
+    @Builder
     public static class CreateRequest {
         @NotBlank(message = "채팅방 이름은 필수입니다.")
         private String name;

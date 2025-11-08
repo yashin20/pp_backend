@@ -1,6 +1,7 @@
 package project.pp_backend.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import project.pp_backend.entity.Member;
 import project.pp_backend.entity.MemberRole;
@@ -43,6 +44,7 @@ public class MemberDto {
     }
 
     @Data
+    @Builder
     public static class CreateRequest {
 
         @NotBlank(message = "아이디는 필수 입력 항목입니다.")

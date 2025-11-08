@@ -18,7 +18,7 @@ public class FriendShipApiController {
 
     private final FriendShipService friendShipService;
 
-    /** 1. Member 의 FriendShip 조회 (Owner 기준)
+    /** [ADMIN] Member 의 FriendShip 조회 (Owner 기준)
      * GET - /api/friends/{owner.username}
      */
     @GetMapping("/{username}")
@@ -27,6 +27,9 @@ public class FriendShipApiController {
         return ResponseEntity.ok(responses);
     }
 
+    /** 1. Member 의 FriendShip 조회 (Owner 기준)
+     * GET - /api/friends/me
+     */
     @GetMapping("/me")
     public ResponseEntity<List<FriendShipDto.Response>> getMyFriends() {
         //1. 토큰에서 사용자 이름(username) 추출

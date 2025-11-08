@@ -1,5 +1,6 @@
 spring:
   profiles:
+    active: dev
     include:
       - config
       - secret
