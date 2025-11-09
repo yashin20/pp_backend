@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import project.pp_backend.config.MemberDetails;
 import project.pp_backend.dto.RoomDto;
+import project.pp_backend.exception.BasicErrorMessage;
 import project.pp_backend.service.RoomService;
 
 import java.util.List;
@@ -88,9 +89,34 @@ public class RoomApiController {
         return ResponseEntity.ok(deletedRoomId);
     }
 
+    /**
+     * 5. 채팅방 초대 (Invite)
+     * POST - /api/rooms/{roomId}/invite
+     */
+    @PostMapping("/{roomId}/invite")
+    public ResponseEntity<RoomDto.Response> inviteRoom(
+            @PathVariable Long roomId,
+            @Valid @RequestBody RoomDto.InviteRequest request
+    ) {
+        //유효성 검증: @PathVariable-roomId 와 request.roomId 동일
+        if (!roomId.equals(request.getRoomId())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        //초대 대상이 비어 있는지 확인
+        if (request.getUsernames() == null || request.getUsernames().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        //한번에 다수의 화원 초대 로직
+        RoomDto.Response response = roomService.batchJoinRoom(roomId, request.getUsernames());
+
+        return ResponseEntity.ok(response);
+    }
+
 
     /**
-     * 5. 채팅방 참가 (Join)
+     * 6. 채팅방 참가 (Join)
      * POST - /api/rooms/{roomId}/join
      */
     @PostMapping("/{roomId}/join")

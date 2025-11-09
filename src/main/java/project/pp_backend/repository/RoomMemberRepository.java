@@ -33,4 +33,6 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
     //특정 회원에 참가 중인 채팅방의 수
     long countByMemberId(Long memberId);
+
+    List<RoomMember> findByRoomIdAndMemberIdIn(Long roomId, List<Long> memberIds);
 }

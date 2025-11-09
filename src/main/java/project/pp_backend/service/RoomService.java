@@ -183,7 +183,47 @@ public class RoomService {
             roomRepository.delete(room);
         }
 
-
         return roomId;
+    }
+
+    //7. 여러 회원을 한번에 참가 시키는 최적화 로직
+    @Transactional
+    public RoomDto.Response batchJoinRoom(Long roomId, List<String> usernames) {
+        //1. 채팅방 조회 (쿼리 1회)
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new DataNotFoundException("채팅방을 찾을 수 없습니다."));
+
+        //2. 모든 초대 대상 회원 조회 (쿼리 2회: SELECT IN)
+        List<Member> members = memberRepository.findByUsernameIn(usernames);
+
+        // 유효성 검사 (초대 목록에 없는 회원 필터링 등)
+        if (members.size() != usernames.size()) {
+            throw new DataNotFoundException("회원이 존재하지 않습니다.");
+        }
+
+        // 3. 이미 참가 중인 회원을 미리 조회하여 필터링 (쿼리 3회: SELECT IN)
+        List<Long> memberIds = members.stream()
+                .map(Member::getId)
+                .collect(Collectors.toList());
+
+        List<RoomMember> existingMembers = roomMemberRepository.findByRoomIdAndMemberIdIn(roomId, memberIds);
+
+        // 이미 참가 중인 회원 ID 목록
+        List<Long> existingMemberIds = existingMembers.stream()
+                .map(roomMember -> roomMember.getMember().getId())
+                .toList();
+
+        // 4. 새로 참가시킬 회원 목록 생성
+        List<RoomMember> newRoomMembers = members.stream()
+                .filter(member -> !existingMemberIds.contains(member.getId()))
+                .map(member -> new RoomMember(room, member))
+                .collect(Collectors.toList());
+
+        // 5. RoomMember 엔티티를 배치 저장 (쿼리 4회: Batch INSERT)
+        if (!newRoomMembers.isEmpty()) {
+            roomMemberRepository.saveAll(newRoomMembers);
+        }
+
+        return new RoomDto.Response(room);
     }
 }
