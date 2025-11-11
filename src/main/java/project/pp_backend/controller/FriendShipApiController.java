@@ -57,6 +57,18 @@ public class FriendShipApiController {
         return ResponseEntity.noContent().build();
     }
 
+    /** 4. 친구 키워드 검색 (친구 닉네임 검색)
+     * GET - /api/friends/search/{keyword}
+     */
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<List<FriendShipDto.Response>> searchFriends(@PathVariable String keyword) {
+        //1. 토큰에서 사용자 이름(username) 추출
+        String username = getAuthenticatedUsername();
+        //2. 친구 키워드 검색
+        List<FriendShipDto.Response> responses = friendShipService.searchFriendShipForOwner(username, keyword);
+        return ResponseEntity.ok(responses);
+    }
+
     //*********** Helper 메서드 **************
     //현재 인증된(로그인된) 사용자 이름(username) 추출
     private String getAuthenticatedUsername() {

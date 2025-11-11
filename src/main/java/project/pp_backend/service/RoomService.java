@@ -226,4 +226,13 @@ public class RoomService {
 
         return new RoomDto.Response(room);
     }
+
+    //8. 참가중인 채팅방 이름 조회
+    public List<RoomDto.Response> searchRoomsForMember(String username, String roomKeyword) {
+        return roomRepository.findParticipatingRoomsByMemberUsernameAndRoomNameContaining(
+                username, roomKeyword
+                ).stream()
+                .map(RoomDto.Response::new)
+                .toList();
+    }
 }

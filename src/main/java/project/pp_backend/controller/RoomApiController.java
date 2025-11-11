@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import project.pp_backend.config.MemberDetails;
 import project.pp_backend.dto.RoomDto;
@@ -56,6 +58,18 @@ public class RoomApiController {
         String username = memberDetails.getUsername();
         List<RoomDto.Response> rooms = roomService.getRoomsByUsername(username);
         return ResponseEntity.ok(rooms);
+    }
+
+    /**
+     * 2-3. 참가중인 채팅방 이름 조회
+     * POST - /api/rooms/my/search/{roomKeyword}
+     */
+    @GetMapping("/my/search/{roomKeyword}")
+    public ResponseEntity<List<RoomDto.Response>> searchRooms(@PathVariable String roomKeyword) {
+        String username = getAuthenticatedUsername();
+
+        List<RoomDto.Response> responses = roomService.searchRoomsForMember(username, roomKeyword);
+        return ResponseEntity.ok(responses);
     }
 
     /**
@@ -143,6 +157,20 @@ public class RoomApiController {
         Long leftRoomId = roomService.leaveRoom(username, roomId);
 
         return ResponseEntity.ok(leftRoomId);
+    }
+
+
+    //*********** Helper 메서드 **************
+    //현재 인증된(로그인된) 사용자 이름(username) 추출
+    private String getAuthenticatedUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //인증에 실패 했거나 토큰이 없는 경우
+        if (authentication == null || "anonymousUser".equals(authentication.getName())) {
+            throw new SecurityException("인증 정보가 유효하지 않습니다.");
+        }
+
+        return authentication.getName();
     }
 
 }

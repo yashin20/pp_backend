@@ -78,4 +78,12 @@ public class FriendShipService {
                 .orElseThrow(() -> new IllegalArgumentException("FriendShip not found"));
         friendShipRepository.delete(friendShip);
     }
+
+    //친구 이름으로 조회
+    public List<FriendShipDto.Response> searchFriendShipForOwner(String ownerUsername, String friendNicknameKeyword) {
+        return friendShipRepository.findByOwnerUsernameAndFriendNicknameContaining(ownerUsername, friendNicknameKeyword)
+                .stream()
+                .map(FriendShipDto.Response::new)
+                .toList();
+    }
 }
