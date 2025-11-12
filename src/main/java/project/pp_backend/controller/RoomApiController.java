@@ -29,13 +29,26 @@ public class RoomApiController {
     @PostMapping
     public ResponseEntity<RoomDto.Response> createRoom(
             @Valid @RequestBody RoomDto.CreateRequest request,
-            @AuthenticationPrincipal MemberDetails memberDetails) {
+            @RequestBody List<String> members) {
+        //1. 로그인 회원 username 불러오기
+        String username = getAuthenticatedUsername();
+        //2. 채팅방 생성 (소속: 로그인 회원 (1명))
+        RoomDto.Response roomResponse = roomService.createRoom(username, request);
+        //3. 채팅방에 배치로 회원 여러명 추가
+        roomService.batchJoinRoom(roomResponse.getId(), members);
 
-        String username = memberDetails.getUsername();
-        RoomDto.Response response = roomService.createRoom(username, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(roomResponse);
     }
+//    @PostMapping
+//    public ResponseEntity<RoomDto.Response> createRoom(
+//            @Valid @RequestBody RoomDto.CreateRequest request,
+//            @AuthenticationPrincipal MemberDetails memberDetails) {
+//
+//        String username = memberDetails.getUsername();
+//        RoomDto.Response response = roomService.createRoom(username, request);
+//
+//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+//    }
 
     /**
      * 2-1. 채팅방 단일 조회

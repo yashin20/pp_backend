@@ -14,8 +14,10 @@ import project.pp_backend.repository.MessageRepository;
 import project.pp_backend.repository.RoomMemberRepository;
 import project.pp_backend.repository.RoomRepository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,23 +41,43 @@ public class RoomService {
      */
     @Transactional
     public RoomDto.Response createRoom(String username, RoomDto.CreateRequest request) {
-        // 1. 회원 존재 확인
-        Member member = memberRepository.findByUsername(username)
+        // 1. 회원 존재 확인 (쿼리 1회: SELECT)
+        Member roomOwner = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new DataNotFoundException("회원을 찾을 수 없습니다. 채팅방을 생성할 수 없습니다."));
 
-        //2. 회원당 채팅방 생성 개수 제한
-        long existingRoomCount = roomMemberRepository.countByMemberId(member.getId());
+        //2. 회원당 채팅방 생성 개수 제한 (쿼리 2회: COUNT)
+        long existingRoomCount = roomMemberRepository.countByMemberId(roomOwner.getId());
         if (existingRoomCount >= MAX_ROOM_CREATION_LIMIT) {
             throw new SecurityException("최대 채팅방 생성/참가 개수(" + MAX_ROOM_CREATION_LIMIT + "개)");
         }
 
-        //3. 엔티티 변환 및 저장
+        //3. 엔티티 변환 및 저장 (쿼리 3회: INSECT Room)
         Room room = request.toEntity();
         roomRepository.save(room);
 
-        //4. 방 생성자(Owner)를 RoomMember 에 자동 추가 (채팅방 참가 처리)
-        RoomMember roomMember = new RoomMember(room, member);
-        roomMemberRepository.save(roomMember);
+        //--- 4. 참가자 목록(방 생성자 포함) 채팅방에 참가시키기 ---
+
+        //4-1. 참가자 username 리스트 구성
+        Set<String> uniqueUsernames = new HashSet<>(request.getMemberUsernames());
+        uniqueUsernames.add(username); //Set->중복 방지 / 명시적으로 방 생성자 참가
+
+        //4-2. 모든 초대 대상 회원 조회 (쿼리 4회: SELECT IN)
+        List<Member> members = memberRepository.findByUsernameIn(uniqueUsernames.stream().toList());
+
+        //4-3. 유효성 검사 (초대 목록에 없는 회원이 있는지 확인)
+        if (members.size() != uniqueUsernames.size()) {
+            throw new DataNotFoundException("초대 목록에 존재하지 않는 회원이 포함되어 있습니다.");
+        }
+
+        //4-4. 새로 참가시킬 회원 목록 생성
+        List<RoomMember> newRoomMembers = members.stream()
+                .map(member -> new RoomMember(room, member))
+                .collect(Collectors.toList());
+
+        //4-5. RoomMember 엔티티를 배치 저장 (쿼리 5회: Batch INSERT)
+        if (!newRoomMembers.isEmpty()) {
+            roomMemberRepository.saveAll(newRoomMembers);
+        }
 
         return new RoomDto.Response(room);
     }
