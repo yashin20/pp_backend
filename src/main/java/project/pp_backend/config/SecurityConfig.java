@@ -64,6 +64,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                                 // 나머지 /api/** 경로는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/**").authenticated()
+                                //WebSocket 연결
+                                .requestMatchers("/ws-stomp/**").permitAll()
                                 // 그 외 모든 요청은 불허
                                 .anyRequest().denyAll()
                 )

@@ -4,7 +4,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import project.pp_backend.config.MemberDetails;
 import project.pp_backend.dto.MessageDto;
@@ -56,5 +58,19 @@ public class MessageApiController {
         messageService.deleteMessage(username, messageId);
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    //*********** Helper 메서드 **************
+    //현재 인증된(로그인된) 사용자 이름(username) 추출
+    private String getAuthenticatedUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //인증에 실패 했거나 토큰이 없는 경우
+        if (authentication == null || "anonymousUser".equals(authentication.getName())) {
+            throw new SecurityException("인증 정보가 유효하지 않습니다.");
+        }
+
+        return authentication.getName();
     }
 }

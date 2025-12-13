@@ -15,6 +15,8 @@ import project.pp_backend.service.MemberService;
 import project.pp_backend.service.MessageService;
 import project.pp_backend.service.RoomService;
 
+import java.util.List;
+
 @Profile("dev")
 @Component
 @RequiredArgsConstructor
@@ -39,9 +41,15 @@ public class DataInitializer implements CommandLineRunner {
         createFriendShipIfNotExist("member1", "member2");
         createFriendShipIfNotExist("member1", "member3");
 
-        createRoomIfNotExist("room1 - 1", "member1");
-        createRoomIfNotExist("room2 - 1", "member1");
-        createRoomIfNotExist("room3 - 3", "member3");
+//        Long room1Id = createRoomIfNotExist("room1 - 1", "member1", List.of("member2", "member3"));
+//        createRoomIfNotExist("room2 - 1", "member1", List.of("member2"));
+//        createRoomIfNotExist("room3 - 3", "member3", List.of("member1"));
+//
+//        createMessageIfNotExist("member1", room1Id, "안녕하세요.");
+//        createMessageIfNotExist("member1", room1Id, "안녕하세요.");
+//        createMessageIfNotExist("member2", room1Id, "안녕하세요2.");
+//        createMessageIfNotExist("member3", room1Id, "안녕하세요3.");
+//        createMessageIfNotExist("member1", room1Id, "안녕하세요1.");
 
         System.out.println("--- Test Member Data Initialization Complete ---");
     }
@@ -84,19 +92,25 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void createRoomIfNotExist(String roomName, String username) {
+    private Long createRoomIfNotExist(String roomName, String creator, List<String> members) {
         try {
             RoomDto.CreateRequest request = RoomDto.CreateRequest.builder()
                     .name(roomName)
+                    .usernames(members)
                     .build();
 
-            roomService.createRoom(username, request);
+            RoomDto.Response response = roomService.createRoom(creator, request);
             System.out.println("✅ Room created: " + roomName);
+            return response.getId();
 
         } catch (RuntimeException e) {
             System.out.println("ℹ️ Room already exists: " + roomName);
+
+            return null;
         } catch (Exception e) {
             System.err.println("❌ Error creating Room: " + roomName + ": " + e.getMessage());
+
+            return null;
         }
     }
 

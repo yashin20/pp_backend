@@ -5,11 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import project.pp_backend.config.MemberDetails;
 import project.pp_backend.dto.MessageDto;
 import project.pp_backend.entity.MessageType;
 import project.pp_backend.service.MessageService;
@@ -61,8 +57,8 @@ public class StompChatController {
     }
 
 
-    /**
-     * 클라이언트가 채팅방에 입장했을 때 사용
+    /** (채팅방에 입장하였습니다.)
+     * 클라이언트가 채팅방에 최초 입장했을 때 사용
      * URL : "/pub/chat/enter"
      *
      * @param request : 전송할 메시지 정보 (roomId, content, type 등 포함)
@@ -88,7 +84,7 @@ public class StompChatController {
         messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, savedMessage);
     }
 
-    /**
+    /** (채팅방에 퇴장하였습니다.)
      * 클라이언트가 채팅방에서 퇴장했을 때 사용
      * URL : "/pub/chat/leave"
      *

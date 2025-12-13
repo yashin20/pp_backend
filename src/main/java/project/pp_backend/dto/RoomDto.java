@@ -32,9 +32,8 @@ public class RoomDto {
     public static class CreateRequest {
         @NotBlank(message = "채팅방 이름은 필수입니다.")
         private String name;
-
         @NotEmpty(message = "참가할 회원 목록 리스트는 필수입니다.")
-        List<String> memberUsernames;
+        List<String> usernames;
 
         public Room toEntity() {
             return new Room(name);

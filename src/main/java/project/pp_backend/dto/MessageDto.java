@@ -17,20 +17,22 @@ public class MessageDto {
     @Data
     public static class Response {
         private Long id;
+        private Long roomId;
         private String content;
         private MessageType type;
         private Long memberId;
-        private Long roomId;
+        private String nickname;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
         //Entity -> ResponseDto
         public Response(Message message) {
             this.id = message.getId();
+            this.roomId = message.getRoom().getId();
             this.content = message.getContent();
             this.type = message.getType();
             this.memberId = message.getMember().getId();
-            this.roomId = message.getRoom().getId();
+            this.nickname = message.getMember().getNickname();
             this.createdAt = message.getCreatedAt();
             this.updatedAt = message.getUpdatedAt();
         }

@@ -3,6 +3,7 @@ package project.pp_backend.dto;
 import lombok.Builder;
 import lombok.Data;
 import project.pp_backend.entity.FriendShip;
+import project.pp_backend.entity.FriendShipStatus;
 import project.pp_backend.entity.Member;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ public class FriendShipDto {
         private Long id;
         private String ownerUsername;
         private String friendUsername;
+        private FriendShipStatus status;
         private String friendNickname;
         private LocalDateTime createdAt;
 
@@ -22,6 +24,7 @@ public class FriendShipDto {
             this.id = friendShip.getId();
             this.ownerUsername = friendShip.getOwner().getUsername();
             this.friendUsername = friendShip.getFriend().getUsername();
+            this.status = friendShip.getStatus();
             this.friendNickname = friendShip.getFriend().getNickname();
             this.createdAt = friendShip.getCreatedAt();
         }
@@ -32,10 +35,11 @@ public class FriendShipDto {
     public static class CreateRequest {
         private String ownerUsername;
         private String friendUsername;
+        private FriendShipStatus status;
 
         //Dto -> Entity
         public FriendShip toEntity(Member owner, Member friend) {
-            return new FriendShip(owner, friend);
+            return new FriendShip(owner, friend, status);
         }
     }
 

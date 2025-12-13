@@ -58,7 +58,7 @@ public class RoomService {
         //--- 4. 참가자 목록(방 생성자 포함) 채팅방에 참가시키기 ---
 
         //4-1. 참가자 username 리스트 구성
-        Set<String> uniqueUsernames = new HashSet<>(request.getMemberUsernames());
+        Set<String> uniqueUsernames = new HashSet<>(request.getUsernames());
         uniqueUsernames.add(username); //Set->중복 방지 / 명시적으로 방 생성자 참가
 
         //4-2. 모든 초대 대상 회원 조회 (쿼리 4회: SELECT IN)
