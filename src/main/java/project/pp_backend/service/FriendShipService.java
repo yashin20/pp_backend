@@ -8,7 +8,6 @@ import project.pp_backend.entity.FriendShip;
 import project.pp_backend.entity.FriendShipStatus;
 import project.pp_backend.entity.Member;
 import project.pp_backend.exception.BasicErrorMessage;
-import project.pp_backend.exception.DataAlreadyExistsException;
 import project.pp_backend.exception.DataNotFoundException;
 import project.pp_backend.repository.FriendShipRepository;
 import project.pp_backend.repository.MemberRepository;
@@ -97,7 +96,10 @@ public class FriendShipService {
      * **** REQUEST DTO 를 이용하는 것으로 수정!!!!!!!!!!
      */
     @Transactional
-    public FriendShipDto.Response sendFriendShip(String requesterUsername, String targetUsername) {
+    public FriendShipDto.Response sendFriendShipRequest(FriendShipDto.CreateRequest request) {
+        String requesterUsername = request.getOwnerUsername();
+        String targetUsername = request.getFriendUsername();
+
         //※ 본인에게 신청 방지
         if (requesterUsername.equals(targetUsername)) {
             throw new IllegalArgumentException("자신에게 관계를 형성할 수 없습니다.");
@@ -168,7 +170,10 @@ public class FriendShipService {
      * ※조회 편의성을 위해 양방향으로 관계 생성
      */
     @Transactional
-    public FriendShipDto.Response acceptFriendShip(String accepterUsername, String requesterUsername) {
+    public FriendShipDto.Response acceptFriendShipRequest(FriendShipDto.CreateRequest request) {
+        String accepterUsername = request.getOwnerUsername();
+        String requesterUsername = request.getFriendUsername();
+
         //※ 본인에게 신청 방지
         if (accepterUsername.equals(requesterUsername)) {
             throw new IllegalArgumentException("자신에게 관계를 형성할 수 없습니다.");
@@ -276,6 +281,7 @@ public class FriendShipService {
                 .map(FriendShipDto.Response::new)
                 .toList();
     }
+
 
 
     /**

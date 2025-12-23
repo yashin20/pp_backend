@@ -2,6 +2,7 @@ package project.pp_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +32,7 @@ public class Member extends BaseEntity {
     private List<Message> messages = new ArrayList<>();
 
 
+    @Builder
     public Member(String username, String password, String nickname, String email, MemberRole memberRole) {
         this.username = username;
         this.password = password;

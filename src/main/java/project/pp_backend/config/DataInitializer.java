@@ -8,12 +8,10 @@ import project.pp_backend.dto.FriendShipDto;
 import project.pp_backend.dto.MemberDto;
 import project.pp_backend.dto.MessageDto;
 import project.pp_backend.dto.RoomDto;
+import project.pp_backend.entity.FriendShipStatus;
 import project.pp_backend.entity.MemberRole;
 import project.pp_backend.entity.MessageType;
-import project.pp_backend.service.FriendShipService;
-import project.pp_backend.service.MemberService;
-import project.pp_backend.service.MessageService;
-import project.pp_backend.service.RoomService;
+import project.pp_backend.service.*;
 
 import java.util.List;
 
@@ -25,6 +23,7 @@ public class DataInitializer implements CommandLineRunner {
     private final MessageService messageService;
     private final FriendShipService friendShipService;
     private final RoomService roomService;
+    private final TestMethodService testMethodService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -41,15 +40,19 @@ public class DataInitializer implements CommandLineRunner {
         createFriendShipIfNotExist("member1", "member2");
         createFriendShipIfNotExist("member1", "member3");
 
-//        Long room1Id = createRoomIfNotExist("room1 - 1", "member1", List.of("member2", "member3"));
+        Long room1Id = createRoomIfNotExist("room1 - 1", "member1", List.of("member2", "member3"));
 //        createRoomIfNotExist("room2 - 1", "member1", List.of("member2"));
 //        createRoomIfNotExist("room3 - 3", "member3", List.of("member1"));
 //
-//        createMessageIfNotExist("member1", room1Id, "안녕하세요.");
-//        createMessageIfNotExist("member1", room1Id, "안녕하세요.");
-//        createMessageIfNotExist("member2", room1Id, "안녕하세요2.");
-//        createMessageIfNotExist("member3", room1Id, "안녕하세요3.");
-//        createMessageIfNotExist("member1", room1Id, "안녕하세요1.");
+        createMessageIfNotExist("member1", room1Id, "안녕하세요.", null);
+        createMessageIfNotExist("member1", room1Id, "안녕하세요.", null);
+        createMessageIfNotExist("member2", room1Id, "안녕하세요2.", null);
+        createMessageIfNotExist("member3", room1Id, "안녕하세요3.", null);
+        createMessageIfNotExist("member1", room1Id, "안녕하세요1.",null);
+
+        for (int i = 0; i < 20; i++) {
+            createMessageIfNotExist("member1", room1Id, String.valueOf(i), null);
+        }
 
         System.out.println("--- Test Member Data Initialization Complete ---");
     }
@@ -77,12 +80,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private void createFriendShipIfNotExist(String ownerUsername, String friendUsername) {
         try {
-            FriendShipDto.CreateRequest request = FriendShipDto.CreateRequest.builder()
-                    .ownerUsername(ownerUsername)
-                    .friendUsername(friendUsername)
-                    .build();
-
-            friendShipService.createFriendShip(request);
+            testMethodService.testCreateFriendShip(ownerUsername, friendUsername, FriendShipStatus.ACCEPTED);
             System.out.println("✅ FriendShip created: " + ownerUsername + " - " + friendUsername);
 
         } catch (RuntimeException e) {
@@ -115,16 +113,9 @@ public class DataInitializer implements CommandLineRunner {
     }
 
 
-    private void createMessageIfNotExist(String username, Long roomId, String content) {
+    private void createMessageIfNotExist(String username, Long roomId, String content, String recipientUsername) {
         try {
-            MessageDto.CreateRequest request = MessageDto.CreateRequest.builder()
-                    .content(content)
-                    .type(MessageType.CHAT)
-                    .roomId(roomId)
-                    .sender(username)
-                    .build();
-
-            messageService.createMessage(username, roomId, request);
+            testMethodService.testCreateMessage(username, roomId, content, recipientUsername);
             System.out.println("✅ Message created at roomId: " + roomId);
 
         } catch (RuntimeException e) {

@@ -2,6 +2,7 @@ package project.pp_backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -38,15 +39,14 @@ public class StompChatController {
      * @param request : 전송할 메시지 정보 (roomId, content, type 등 포함)
      * @param principal : 인증된 사용자 정보 (사용자 ID (USERNAME)만 가져온다.)
      */
-    @MessageMapping("/chat/message")
+    @MessageMapping("/chat/message/{roomId}")
     public void sendMessage(
+            @DestinationVariable("roomId") Long roomId,
             Principal principal,
             @Payload MessageDto.CreateRequest request) {
 
         String username = principal.getName();
-        log.info("sendMessage: principal.getName(): {}", principal.getName());
-
-        Long roomId = request.getRoomId();
+        log.info("메시지 전송 - 사용자: {}, 방 번호: {}", username, roomId);
 
         //1. DB 저장
         MessageDto.Response savedMessage = messageService.createMessage(username, roomId, request);
@@ -64,13 +64,13 @@ public class StompChatController {
      * @param request : 전송할 메시지 정보 (roomId, content, type 등 포함)
      * @param principal : 인증된 사용자 정보 (사용자 ID (USERNAME)만 가져온다.)
      */
-    @MessageMapping("/chat/enter")
+    @MessageMapping("/chat/enter/{roomId}")
     public void enterRoom(
+            @DestinationVariable("roomId") Long roomId,
             Principal principal,
             MessageDto.CreateRequest request) {
 
         String username = principal.getName();
-        Long roomId = request.getRoomId();
 
         //1. 알림 메시지 구성
         String content = username + "님이 입장하셨습니다.";
@@ -91,13 +91,13 @@ public class StompChatController {
      * @param request : 전송할 메시지 정보 (roomId, content, type 등 포함)
      * @param principal : 인증된 사용자 정보 (사용자 ID (USERNAME)만 가져온다.)
      */
-    @MessageMapping("/chat/leave")
+    @MessageMapping("/chat/leave/{roomId}")
     public void leaveRoom(
+            @DestinationVariable("roomId") Long roomId,
             Principal principal,
             MessageDto.CreateRequest request) {
 
         String username = principal.getName();
-        Long roomId = request.getRoomId();
 
         //1. 알림 메시지
         String content = username + "님이 퇴장하셨습니다.";

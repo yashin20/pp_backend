@@ -31,13 +31,16 @@ public class Message extends BaseEntity {
     @JoinColumn(name = "recipient_member_id", nullable = true)
     private Member recipient;
 
+
     @Builder
-    public Message(String content, MessageType type, Member member, Room room) {
+    public Message(String content, MessageType type, Member member, Room room, Member recipient) {
         this.content = content;
         this.type = type;
         this.member = member;
         this.room = room;
+        this.recipient = recipient;
     }
+
 
     /**
      * 이 메시지가 귓속말인지 확인
@@ -45,5 +48,9 @@ public class Message extends BaseEntity {
      */
     public boolean isWhisper() {
         return this.recipient != null;
+    }
+    //귓말 대상 설정
+    public void setWhisperRecipient(Member recipient) {
+        this.recipient = recipient;
     }
 }

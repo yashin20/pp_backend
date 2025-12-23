@@ -5,10 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import project.pp_backend.entity.Member;
 import project.pp_backend.entity.Message;
 import project.pp_backend.entity.MessageType;
-import project.pp_backend.entity.Room;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +23,9 @@ public class MessageDto {
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
+        // 귓속말 대상자 (null 이면 일반 메시지)
+        private String recipientUsername;
+
         //Entity -> ResponseDto
         public Response(Message message) {
             this.id = message.getId();
@@ -35,6 +36,8 @@ public class MessageDto {
             this.nickname = message.getMember().getNickname();
             this.createdAt = message.getCreatedAt();
             this.updatedAt = message.getUpdatedAt();
+
+            this.recipientUsername = message.getRecipient() != null ? message.getRecipient().getUsername() : null;
         }
     }
 
@@ -46,17 +49,7 @@ public class MessageDto {
         @NotBlank(message = "메시지가 입력되지 않았습니다.")
         private String content;
         private MessageType type;
-        private Long roomId;
-        private String sender;
-
-        //RequestDto -> Entity
-        public Message toEntity(Member member, Room room) {
-            return new Message(
-                    this.content,
-                    this.type,
-                    member,
-                    room
-            );
-        }
+        //귓속말 수신자 (귓속말일때만 사용)
+        private String recipientUsername;
     }
 }

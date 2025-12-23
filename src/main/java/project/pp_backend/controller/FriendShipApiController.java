@@ -39,12 +39,20 @@ public class FriendShipApiController {
         return ResponseEntity.ok(responses);
     }
 
-    /** 2. FriendShip 생성
-     * POST - /api/friends/create
+    /** 2-1. 친구 요청 보내기
+     * POST - /api/friends/send
      */
-    @PostMapping("/create")
-    public ResponseEntity<FriendShipDto.Response> createFriendShip(@Valid @RequestBody FriendShipDto.CreateRequest request) {
-        FriendShipDto.Response response = friendShipService.createFriendShip(request);
+    @PostMapping("/send")
+    public ResponseEntity<FriendShipDto.Response> sendFriendRequest(@Valid @RequestBody FriendShipDto.CreateRequest request) {
+        FriendShipDto.Response response = friendShipService.sendFriendShipRequest(request);
+        return ResponseEntity.ok(response);
+    }
+    /** 2-2. 친구 요청 수락 (친구 관계 성립)
+     * POST - /api/friends/accept
+     */
+    @PostMapping("/accept")
+    public ResponseEntity<FriendShipDto.Response> acceptFriendRequest(@Valid @RequestBody FriendShipDto.CreateRequest request) {
+        FriendShipDto.Response response = friendShipService.acceptFriendShipRequest(request);
         return ResponseEntity.ok(response);
     }
 

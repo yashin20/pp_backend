@@ -37,13 +37,16 @@ public class MessageApiController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /** 2. 특정 채팅방의 메시지 목록 조회
+    /** 2. 특정 채팅방 + 회원이 볼수 있는 메시지 조회
      * GET - /api/messages/rooms/{roomId}
      * - 채팅방 진입 시 이전 대화 내용을 불러오는 용도
      */
     @GetMapping("/rooms/{roomId}")
-    public ResponseEntity<List<MessageDto.Response>> getMessagesByRoom(@PathVariable Long roomId) {
-        List<MessageDto.Response> messages = messageService.getMessagesByRoom(roomId);
+    public ResponseEntity<List<MessageDto.Response>> getVisibleMessages(
+            @PathVariable Long roomId,
+            @AuthenticationPrincipal MemberDetails memberDetails) {
+        String username = memberDetails.getUsername();
+        List<MessageDto.Response> messages = messageService.getVisibleMessagesByRoomAndMember(username, roomId);
         return ResponseEntity.ok(messages);
     }
 
@@ -54,6 +57,7 @@ public class MessageApiController {
     @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> deleteMessage(@PathVariable Long messageId,
                                               @AuthenticationPrincipal MemberDetails memberDetails) {
+
         String username = memberDetails.getUsername();
         messageService.deleteMessage(username, messageId);
 

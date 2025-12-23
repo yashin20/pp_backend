@@ -32,7 +32,13 @@ public class MemberService {
         request.setPassword(passwordEncoder.encode(request.getPassword()));
 
         //1-3. 회원 생성
-        Member newMember = request.toEntity();
+        Member newMember = Member.builder()
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .nickname(request.getNickname())
+                .email(request.getEmail())
+                .memberRole(request.getRole())
+                .build();
 
         //1-4. 엔티티 저장
         Member savedMember = memberRepository.save(newMember);

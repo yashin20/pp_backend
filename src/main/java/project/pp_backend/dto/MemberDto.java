@@ -1,5 +1,6 @@
 package project.pp_backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
@@ -7,8 +8,6 @@ import project.pp_backend.entity.Member;
 import project.pp_backend.entity.MemberRole;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public class MemberDto {
 
@@ -18,8 +17,13 @@ public class MemberDto {
         private String username;
         private String nickname;
         private String email;
-        private String createdAt;
-        private String updatedAt;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+        private LocalDateTime createdAt;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+        private LocalDateTime updatedAt;
+
         private String role;
 
         public Response(Member member) {
@@ -27,20 +31,20 @@ public class MemberDto {
             this.username = member.getUsername();
             this.nickname = member.getNickname();
             this.email = member.getEmail();
-            this.createdAt = formatTime(member.getCreatedAt());
-            this.updatedAt = formatTime(member.getUpdatedAt());
+            this.createdAt = member.getCreatedAt();
+            this.updatedAt = member.getUpdatedAt();
             this.role = member.getMemberRole().toString();
         }
 
-        private String formatTime(LocalDateTime dateTime) {
-            if (dateTime == null) {
-                return null; // 또는 빈 문자열 ""
-            }
-
-            //2022-02-22 11:30
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.KOREA);
-            return dateTime.format(formatter);
-        }
+//        private String formatTime(LocalDateTime dateTime) {
+//            if (dateTime == null) {
+//                return null; // 또는 빈 문자열 ""
+//            }
+//
+//            //2022-02-22 11:30
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.KOREA);
+//            return dateTime.format(formatter);
+//        }
     }
 
     @Data
@@ -67,22 +71,13 @@ public class MemberDto {
 
         @NotNull(message = "회원 권한은 필수 선택 항목입니다.")
         private MemberRole role;
-
-        //Create Request DTO -> Entity
-        public Member toEntity() {
-            return new Member(
-                    this.username,
-                    this.password,
-                    this.nickname,
-                    this.email,
-                    this.role
-            );
-        }
     }
 
     @Data
     public static class LoginRequest {
+        @NotBlank(message = "아이디는 필수 입력 항목입니다.")
         private String username;
+        @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
         private String password;
     }
 
@@ -101,17 +96,20 @@ public class MemberDto {
     public static class PasswordRequest {
         @NotBlank(message = "기존 비밀번호는 필수 입력 항목입니다.")
         @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
-        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$",
+                message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
         private String currentPassword;
 
         @NotBlank(message = "새 비밀번호는 필수 입력 항목입니다.")
         @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
-        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$",
+                message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
         private String newPassword;
 
-        @NotBlank(message = "새 비밀번호는 필수 입력 항목입니다.")
+        @NotBlank(message = "새 비밀번호 확인은 필수 입력 항목입니다.")
         @Size(min = 8, max = 20, message = "비밀번호는 8자 이상 20자 이하로 입력해주세요.")
-        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$", message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?~]+$",
+                message = "비밀번호는 알파벳(대소문자), 숫자, 특수문자 만 유효합니다.")
         private String repeatPassword;
     }
 }
