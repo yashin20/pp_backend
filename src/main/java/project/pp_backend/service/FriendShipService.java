@@ -25,18 +25,30 @@ public class FriendShipService {
 
 
     /** ============== 1. 조회 ============== **/
-    /**
-     * 1-1. friendShip 단일 정보 조회
-     * @param request (ownerUsername, friendUsername, status)
-     */
-    public FriendShipDto.Response getFriendShip(FriendShipDto.CreateRequest request) {
-        Member owner = findMemberByUsername(request.getOwnerUsername());
-        Member friend = findMemberByUsername(request.getFriendUsername());
 
-        return new FriendShipDto.Response(
-                friendShipRepository.findByOwnerAndFriendAndStatus(owner, friend, request.getStatus())
-                        .orElseThrow(() -> new IllegalArgumentException("FriendShip not found"))
-        );
+    /**
+     * A 와 B 간의 모든 관계 조회
+     */
+    public List<FriendShipDto.Response> getMemberFriendShip(String username) {
+        //1. username 으로 Member 를 찾아 ID를 획득
+        Long memberId = memberRepository.findByUsername(username)
+                .map(Member::getId)
+                .orElseThrow(() -> new DataNotFoundException("사용자를 찾을 수 없습니다."));
+
+        //2. 획득한 ID로 관계 조회
+        return friendShipRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(FriendShipDto.Response::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 1-1. friendShip 단일 정보 조회 (FriendShip id 기반)
+     */
+    public FriendShipDto.Response getFriendShipById(Long id) {
+        FriendShip friendShip = friendShipRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("존재하지 않는 관계 입니다. : " + id));
+        return new FriendShipDto.Response(friendShip);
     }
 
     /**
@@ -96,17 +108,17 @@ public class FriendShipService {
      * **** REQUEST DTO 를 이용하는 것으로 수정!!!!!!!!!!
      */
     @Transactional
-    public FriendShipDto.Response sendFriendShipRequest(FriendShipDto.CreateRequest request) {
-        String requesterUsername = request.getOwnerUsername();
-        String targetUsername = request.getFriendUsername();
+    public FriendShipDto.Response sendFriendShipRequest(FriendShipDto.Request request) {
+        Long requesterId = request.getOwnerId();
+        Long targetId = request.getFriendId();
 
         //※ 본인에게 신청 방지
-        if (requesterUsername.equals(targetUsername)) {
+        if (requesterId.equals(targetId)) {
             throw new IllegalArgumentException("자신에게 관계를 형성할 수 없습니다.");
         }
 
-        Member requester = findMemberByUsername(requesterUsername);
-        Member target = findMemberByUsername(targetUsername);
+        Member requester = findMemberById(requesterId);
+        Member target = findMemberById(targetId);
 
         //1. 관계 확인 A -> B (정방향)
         Optional<FriendShip> forwardOpt = friendShipRepository.findByOwnerAndFriend(requester, target);
@@ -170,17 +182,17 @@ public class FriendShipService {
      * ※조회 편의성을 위해 양방향으로 관계 생성
      */
     @Transactional
-    public FriendShipDto.Response acceptFriendShipRequest(FriendShipDto.CreateRequest request) {
-        String accepterUsername = request.getOwnerUsername();
-        String requesterUsername = request.getFriendUsername();
+    public FriendShipDto.Response acceptFriendShipRequest(FriendShipDto.Request request) {
+        Long accepterId = request.getOwnerId();
+        Long requesterId = request.getFriendId();
 
         //※ 본인에게 신청 방지
-        if (accepterUsername.equals(requesterUsername)) {
+        if (accepterId.equals(requesterId)) {
             throw new IllegalArgumentException("자신에게 관계를 형성할 수 없습니다.");
         }
 
-        Member accepter = findMemberByUsername(accepterUsername);
-        Member requester = findMemberByUsername(requesterUsername);
+        Member accepter = findMemberById(accepterId);
+        Member requester = findMemberById(requesterId);
 
         //1. 기존 관계 (requester -> accepter, PENDING) 조회
         FriendShip existing = findFriendShipByOwnerFriend(requester, accepter);
@@ -212,14 +224,17 @@ public class FriendShipService {
      *
      * FriendShip(owner: A, friend: B, status: BLOCKED) 만 존재하게 됨.
      */
-    public FriendShipDto.Response blockMember(String blockerUsername, String blockedUsername) {
+    public FriendShipDto.Response blockMember(FriendShipDto.Request request) {
+        Long blockerId = request.getOwnerId();
+        Long blockedId = request.getFriendId();
+
         //※ 본인에게 신청 방지
-        if (blockerUsername.equals(blockedUsername)) {
+        if (blockerId.equals(blockedId)) {
             throw new IllegalArgumentException("자신을 차단할 수 없습니다.");
         }
 
-        Member blocker = findMemberByUsername(blockerUsername);
-        Member blocked = findMemberByUsername(blockedUsername);
+        Member blocker = findMemberById(blockerId);
+        Member blocked = findMemberById(blockedId);
 
         // ====================== 2. 역방향 관계 (B -> A) 제거 ======================
         Optional<FriendShip> reverseOpt = friendShipRepository.findByOwnerAndFriend(blocked, blocker);
@@ -256,14 +271,17 @@ public class FriendShipService {
      * FriendShip(owner: A, friend: B, status: ACCEPTED) -> 삭제!
      * FriendShip(owner: B, friend: A, status: ACCEPTED) -> 삭제!
      */
-    public void deleteFriendShip(String ownerUsername, String targetUsername) {
+    public void deleteFriendShip(FriendShipDto.Request request) {
+        Long ownerId = request.getOwnerId();
+        Long targetId = request.getFriendId();
+
         //※ 본인에게 신청 방지
-        if (ownerUsername.equals(targetUsername)) {
+        if (ownerId.equals(targetId)) {
             throw new IllegalArgumentException("자신에게 관계를 형성할 수 없습니다.");
         }
 
-        Member owner = findMemberByUsername(ownerUsername);
-        Member target = findMemberByUsername(targetUsername);
+        Member owner = findMemberById(ownerId);
+        Member target = findMemberById(targetId);
 
         // ====================== 2. 정방향 관계 (A -> B) 제거 ======================
         Optional<FriendShip> forwardOpt = friendShipRepository.findByOwnerAndFriend(owner, target);
@@ -291,6 +309,11 @@ public class FriendShipService {
     private Member findMemberByUsername(String username) {
         return memberRepository.findByUsername(username)
                 .orElseThrow(() -> new DataNotFoundException("존재하지 않는 회원: " + username));
+    }
+
+    private Member findMemberById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("존재하지 않는 회원: " + id));
     }
 
     /**

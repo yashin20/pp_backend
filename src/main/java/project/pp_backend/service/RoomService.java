@@ -35,14 +35,14 @@ public class RoomService {
 
     /**
      * 1. 채팅방 생성
-     * @param username : 방을 생성하는 회원의 username
+     * @param memberId : 방을 생성하는 회원의 memberId
      * @param request : 채팅방 생성 요청 DTO
      * @return : 생성된 채팅방 DTO
      */
     @Transactional
-    public RoomDto.Response createRoom(String username, RoomDto.CreateRequest request) {
+    public RoomDto.Response createRoom(Long memberId, RoomDto.CreateRequest request) {
         // 1. 회원 존재 확인 (쿼리 1회: SELECT)
-        Member roomOwner = memberRepository.findByUsername(username)
+        Member roomOwner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DataNotFoundException("회원을 찾을 수 없습니다. 채팅방을 생성할 수 없습니다."));
 
         //2. 회원당 채팅방 생성 개수 제한 (쿼리 2회: COUNT)
@@ -58,14 +58,14 @@ public class RoomService {
         //--- 4. 참가자 목록(방 생성자 포함) 채팅방에 참가시키기 ---
 
         //4-1. 참가자 username 리스트 구성
-        Set<String> uniqueUsernames = new HashSet<>(request.getUsernames());
-        uniqueUsernames.add(username); //Set->중복 방지 / 명시적으로 방 생성자 참가
+        Set<Long> uniqueMemberIds = new HashSet<>(request.getMemberIds());
+        uniqueMemberIds.add(roomOwner.getId()); //Set->중복 방지 / 명시적으로 방 생성자 참가
 
         //4-2. 모든 초대 대상 회원 조회 (쿼리 4회: SELECT IN)
-        List<Member> members = memberRepository.findByUsernameIn(uniqueUsernames.stream().toList());
+        List<Member> members = memberRepository.findByIdIn(uniqueMemberIds.stream().toList());
 
-        //4-3. 유효성 검사 (초대 목록에 없는 회원이 있는지 확인)
-        if (members.size() != uniqueUsernames.size()) {
+        //4-3. 유효성 검사 (입력된 ID 중 실제 DB에 없는 ID가 있는지 확인)
+        if (members.size() != uniqueMemberIds.size()) {
             throw new DataNotFoundException("초대 목록에 존재하지 않는 회원이 포함되어 있습니다.");
         }
 
@@ -90,11 +90,15 @@ public class RoomService {
     }
 
     //2-2. 채팅방 목록 조회 (회원이 참가중인 채팅방 목록)
-    public List<RoomDto.Response> getRoomsByUsername(String username) {
-        return roomMemberRepository.findByMemberUsername(username).stream()
-                .map(roomMember -> new RoomDto.Response(roomMember.getRoom()))
-                .collect(Collectors.toList());
+//    public List<RoomDto.Response> getRoomsByUsername(String username) {
+//        return roomMemberRepository.findByMemberUsername(username).stream()
+//                .map(roomMember -> new RoomDto.Response(roomMember.getRoom()))
+//                .collect(Collectors.toList());
+//    }
+    public List<RoomDto.Response> getRoomsByUsername(Long memberId) {
+        return roomRepository.findMyRoomsWithLastMessage(memberId);
     }
+
 
     //2-3. 채팅방 목록 조회 (전체 조회 - 관리자용)
     public List<RoomDto.Response> getAllRooms() {

@@ -4,13 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import project.pp_backend.dto.FriendShipDto;
 import project.pp_backend.dto.MemberDto;
-import project.pp_backend.dto.MessageDto;
 import project.pp_backend.dto.RoomDto;
 import project.pp_backend.entity.FriendShipStatus;
 import project.pp_backend.entity.MemberRole;
-import project.pp_backend.entity.MessageType;
 import project.pp_backend.service.*;
 
 import java.util.List;
@@ -33,31 +30,32 @@ public class DataInitializer implements CommandLineRunner {
     private void initializeTestData() {
         System.out.println("--- [Dev Profile] Initializing Test Member Data ---");
 
-        createMemberIfNotExist("member1", "1q2w3e4r", "maru", "maru@example.com");
-        createMemberIfNotExist("member2", "1q2w3e4r", "nickname2", "nickname2@example.com");
-        createMemberIfNotExist("member3", "1q2w3e4r", "nickname3", "nickname3@example.com");
+        MemberDto.Response member1Response = createMemberIfNotExist("member1", "1q2w3e4r", "maru", "maru@example.com");
+        MemberDto.Response member2Response = createMemberIfNotExist("member2", "1q2w3e4r", "nickname2", "nickname2@example.com");
+        MemberDto.Response member3Response = createMemberIfNotExist("member3", "1q2w3e4r", "nickname3", "nickname3@example.com");
+        MemberDto.Response member4Response = createMemberIfNotExist("member4", "1q2w3e4r", "nickname4", "nickname4@example.com");
+        MemberDto.Response member5Response = createMemberIfNotExist("member5", "1q2w3e4r", "nickname5", "nickname5@example.com");
+        MemberDto.Response member6Response = createMemberIfNotExist("member6", "1q2w3e4r", "nickname6", "nickname6@example.com");
 
-        createFriendShipIfNotExist("member1", "member2");
-        createFriendShipIfNotExist("member1", "member3");
+        createFriendShipIfNotExist(member1Response.getUsername(), member2Response.getUsername());
+        createFriendShipIfNotExist(member1Response.getUsername(), member3Response.getUsername());
+        createFriendShipForwardIfNotExist(member1Response.getUsername(), member4Response.getUsername(), FriendShipStatus.PENDING);
+        createFriendShipForwardIfNotExist(member5Response.getUsername(), member1Response.getUsername(), FriendShipStatus.PENDING);
+        createFriendShipForwardIfNotExist(member1Response.getUsername(), member6Response.getUsername(), FriendShipStatus.BLOCKED);
 
-        Long room1Id = createRoomIfNotExist("room1 - 1", "member1", List.of("member2", "member3"));
-//        createRoomIfNotExist("room2 - 1", "member1", List.of("member2"));
-//        createRoomIfNotExist("room3 - 3", "member3", List.of("member1"));
-//
-        createMessageIfNotExist("member1", room1Id, "안녕하세요.", null);
-        createMessageIfNotExist("member1", room1Id, "안녕하세요.", null);
-        createMessageIfNotExist("member2", room1Id, "안녕하세요2.", null);
-        createMessageIfNotExist("member3", room1Id, "안녕하세요3.", null);
-        createMessageIfNotExist("member1", room1Id, "안녕하세요1.",null);
+        Long room1Id = createRoomIfNotExist("room1 - 1", member1Response.getId(), List.of(member2Response.getId(), member3Response.getId()));
+        Long room2Id = createRoomIfNotExist("room2 - 1", member1Response.getId(), List.of(member2Response.getId(), member3Response.getId()));
+        Long room3Id = createRoomIfNotExist("room3 - 1", member1Response.getId(), List.of(member2Response.getId(), member3Response.getId()));
 
-        for (int i = 0; i < 20; i++) {
-            createMessageIfNotExist("member1", room1Id, String.valueOf(i), null);
+        for (int i = 0; i < 33; i++) {
+            createMessageIfNotExist("member1", room1Id, "안녕하세요." + String.valueOf(i),null);
+            createMessageIfNotExist("member2", room1Id, "안녕하세요." + String.valueOf(i),null);
         }
 
         System.out.println("--- Test Member Data Initialization Complete ---");
     }
 
-    private void createMemberIfNotExist(String username, String password, String nickname, String email) {
+    private MemberDto.Response createMemberIfNotExist(String username, String password, String nickname, String email) {
         try {
             MemberDto.CreateRequest request = MemberDto.CreateRequest.builder()
                     .username(username)
@@ -67,8 +65,9 @@ public class DataInitializer implements CommandLineRunner {
                     .role(MemberRole.USER)
                     .build();
 
-            memberService.createMember(request);
+            MemberDto.Response returnValue = memberService.createMember(request);
             System.out.println("✅ Member created: " + username);
+            return returnValue;
 
         } catch (RuntimeException e) {
             // 사용자 ID가 이미 존재할 경우 (MemberService에서 처리했다고 가정)
@@ -76,6 +75,7 @@ public class DataInitializer implements CommandLineRunner {
         } catch (Exception e) {
             System.err.println("❌ Error creating member " + username + ": " + e.getMessage());
         }
+        return null;
     }
 
     private void createFriendShipIfNotExist(String ownerUsername, String friendUsername) {
@@ -90,14 +90,26 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private Long createRoomIfNotExist(String roomName, String creator, List<String> members) {
+    private void createFriendShipForwardIfNotExist(String ownerUsername, String friendUsername, FriendShipStatus status) {
+        try {
+            testMethodService.testCreateAtoB(ownerUsername, friendUsername, status);
+            System.out.println("✅ FriendShip Forward created: " + ownerUsername + " - " + friendUsername);
+
+        } catch (RuntimeException e) {
+            System.out.println("ℹ️ FriendShip already exists: " + ownerUsername + " - " + friendUsername);
+        } catch (Exception e) {
+            System.err.println("❌ Error creating FriendShip: " + ownerUsername + " - " + friendUsername);
+        }
+    }
+
+    private Long createRoomIfNotExist(String roomName, Long memberId, List<Long> membersIds) {
         try {
             RoomDto.CreateRequest request = RoomDto.CreateRequest.builder()
                     .name(roomName)
-                    .usernames(members)
+                    .memberIds(membersIds)
                     .build();
 
-            RoomDto.Response response = roomService.createRoom(creator, request);
+            RoomDto.Response response = roomService.createRoom(memberId, request);
             System.out.println("✅ Room created: " + roomName);
             return response.getId();
 

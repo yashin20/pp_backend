@@ -18,9 +18,9 @@ import java.security.Principal;
 /**
  * STOMP 프로토콜을 사용하여 실시간 채팅 메시지 처리 컨트롤러
  * /////////////////////////////////////////////////
- * 클라이언트 메시지 전송: /pub/chat/message
- * 클라이언트 입장 알림: /pub/chat/enter
- * 클라이언트 퇴장 알림: /pub/chat/leave
+ * 클라이언트 메시지 전송: /pub/chat/message/{roomId}
+ * 클라이언트 입장 알림: /pub/chat/enter/{roomId}
+ * 클라이언트 퇴장 알림: /pub/chat/leave/{roomId}
  */
 @Controller
 @RequiredArgsConstructor

@@ -40,6 +40,11 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, Long> {
             @Param("member2") Member member2
     );
 
+    //A 가 속한 모든 관계를 찾기 위함
+    @Query("SELECT fs FROM FriendShip fs " +
+            "WHERE fs.owner.id = :memberId OR fs.friend.id = :memberId")
+    List<FriendShip> findAllByMemberId(@Param("id") Long memberId);
+
     Optional<FriendShip> findByOwnerAndFriend(Member owner, Member friend);
 
     //Owner 모든 친구를 friendNicknameKeyword(친구 닉네임) 으로 검색 가능

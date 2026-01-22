@@ -27,11 +27,10 @@ public class RoomApiController {
      * POST - /api/rooms/
      */
     @PostMapping
-    public ResponseEntity<RoomDto.Response> createRoom(@Valid @RequestBody RoomDto.CreateRequest request) {
-        //1. 로그인 회원 username 불러오기
-        String username = getAuthenticatedUsername();
+    public ResponseEntity<RoomDto.Response> createRoom(@Valid @RequestBody RoomDto.CreateRequest request,
+                                                       @AuthenticationPrincipal MemberDetails memberDetails) {
         //2. 채팅방 생성 (소속: 로그인 회원 (1명))
-        RoomDto.Response roomResponse = roomService.createRoom(username, request);
+        RoomDto.Response roomResponse = roomService.createRoom(memberDetails.getId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(roomResponse);
     }
@@ -54,8 +53,8 @@ public class RoomApiController {
     public ResponseEntity<List<RoomDto.Response>> getRoomsByUsername(
             @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        String username = memberDetails.getUsername();
-        List<RoomDto.Response> rooms = roomService.getRoomsByUsername(username);
+//        String username = memberDetails.getUsername();
+        List<RoomDto.Response> rooms = roomService.getRoomsByUsername(memberDetails.getId());
         return ResponseEntity.ok(rooms);
     }
 

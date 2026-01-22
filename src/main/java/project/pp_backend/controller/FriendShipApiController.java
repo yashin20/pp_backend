@@ -27,10 +27,25 @@ public class FriendShipApiController {
         return ResponseEntity.ok(responses);
     }
 
-    /** 1. Member 의 FriendShip 조회 (Owner 기준)
+    /**
+     * [통합] 로그인된 사용자의 모든 관계(친구, 보낸/받은 신청, 차단) 조회
      * GET - /api/friends/me
      */
     @GetMapping("/me")
+    public ResponseEntity<List<FriendShipDto.Response>> getMyAllRelationships() {
+        // 1. 토큰에서 사용자 이름 추출
+        String username = getAuthenticatedUsername();
+
+        // 2. 서비스에서 OR 쿼리를 사용하여 A와 관련된 모든 리스트 조회
+        List<FriendShipDto.Response> responses = friendShipService.getMemberFriendShip(username);
+
+        return ResponseEntity.ok(responses);
+    }
+
+    /** 1-1. '친구(FriendShipStatus.ACCEPTED)' 목록 조회
+     * GET - /api/friends/me/list
+     */
+    @GetMapping("/me/list")
     public ResponseEntity<List<FriendShipDto.Response>> getMyFriends() {
         //1. 토큰에서 사용자 이름(username) 추출
         String username = getAuthenticatedUsername();
@@ -39,11 +54,40 @@ public class FriendShipApiController {
         return ResponseEntity.ok(responses);
     }
 
+    /** 1-2. '보낸 친구 신청(FriendShipStatus.PENDING)' 목록 조회
+     * GET - /api/friends/me/sent
+     */
+    @GetMapping("/me/sent")
+    public ResponseEntity<List<FriendShipDto.Response>> getSentFriendRequests() {
+        String username = getAuthenticatedUsername();
+        return ResponseEntity.ok(friendShipService.getSendFriendRequests(username));
+    }
+
+    /** 1-3. '받은 친구 신청(FriendShipStatus.PENDING)' 목록 조회
+     * GET - /api/friends/me/received
+     */
+    @GetMapping("/me/received")
+    public ResponseEntity<List<FriendShipDto.Response>> getReceivedFriendRequests() {
+        String username = getAuthenticatedUsername();
+        return ResponseEntity.ok(friendShipService.getReceivedFriendRequests(username));
+    }
+
+    /** 1-4. '차단한 친구(FriendShipStatus.BLOCKED)' 목록 조회
+     * GET - /api/friends/me/received
+     */
+    @GetMapping("/me/blocked")
+    public ResponseEntity<List<FriendShipDto.Response>> getBlockedFriendRequests() {
+        String username = getAuthenticatedUsername();
+        return ResponseEntity.ok(friendShipService.getBlockedMembers(username));
+    }
+
+
+
     /** 2-1. 친구 요청 보내기
      * POST - /api/friends/send
      */
     @PostMapping("/send")
-    public ResponseEntity<FriendShipDto.Response> sendFriendRequest(@Valid @RequestBody FriendShipDto.CreateRequest request) {
+    public ResponseEntity<FriendShipDto.Response> sendFriendRequest(@Valid @RequestBody FriendShipDto.Request request) {
         FriendShipDto.Response response = friendShipService.sendFriendShipRequest(request);
         return ResponseEntity.ok(response);
     }
@@ -51,7 +95,7 @@ public class FriendShipApiController {
      * POST - /api/friends/accept
      */
     @PostMapping("/accept")
-    public ResponseEntity<FriendShipDto.Response> acceptFriendRequest(@Valid @RequestBody FriendShipDto.CreateRequest request) {
+    public ResponseEntity<FriendShipDto.Response> acceptFriendRequest(@Valid @RequestBody FriendShipDto.Request request) {
         FriendShipDto.Response response = friendShipService.acceptFriendShipRequest(request);
         return ResponseEntity.ok(response);
     }
@@ -60,8 +104,8 @@ public class FriendShipApiController {
      * DELETE - /api/friends/delete
      */
     @DeleteMapping("/delete")
-    public ResponseEntity<Void> deleteFriendShip(@Valid @RequestBody FriendShipDto.DeleteRequest request) {
-        friendShipService.deleteFriendShip(request.getOwnerUsername(), request.getFriendUsername());
+    public ResponseEntity<Void> deleteFriendShip(@Valid @RequestBody FriendShipDto.Request request) {
+        friendShipService.deleteFriendShip(request);
         return ResponseEntity.noContent().build();
     }
 

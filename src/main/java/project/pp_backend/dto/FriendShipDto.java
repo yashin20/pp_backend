@@ -13,18 +13,20 @@ public class FriendShipDto {
     @Data
     public static class Response {
         private Long id;
-        private String ownerUsername;
-        private String friendUsername;
+        private Long ownerId;
+        private Long friendId;
         private FriendShipStatus status;
+        private String ownerNickname;
         private String friendNickname;
         private LocalDateTime createdAt;
 
         //Entity -> Dto
         public Response(FriendShip friendShip) {
             this.id = friendShip.getId();
-            this.ownerUsername = friendShip.getOwner().getUsername();
-            this.friendUsername = friendShip.getFriend().getUsername();
+            this.ownerId = friendShip.getOwner().getId();
+            this.friendId = friendShip.getFriend().getId();
             this.status = friendShip.getStatus();
+            this.ownerNickname = friendShip.getOwner().getNickname();
             this.friendNickname = friendShip.getFriend().getNickname();
             this.createdAt = friendShip.getCreatedAt();
         }
@@ -32,20 +34,9 @@ public class FriendShipDto {
 
     @Data
     @Builder
-    public static class CreateRequest {
-        private String ownerUsername;
-        private String friendUsername;
-        private FriendShipStatus status;
-
-        //Dto -> Entity
-        public FriendShip toEntity(Member owner, Member friend) {
-            return new FriendShip(owner, friend, status);
-        }
+    public static class Request {
+        private Long ownerId;
+        private Long friendId;
     }
 
-    @Data
-    public static class DeleteRequest {
-        private String ownerUsername;
-        private String friendUsername;
-    }
 }

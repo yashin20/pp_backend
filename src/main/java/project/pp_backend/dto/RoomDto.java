@@ -15,6 +15,8 @@ public class RoomDto {
     public static class Response {
         private Long id;
         private String name;
+        private String lastMessage;
+        private LocalDateTime lastMessageTime;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -25,6 +27,14 @@ public class RoomDto {
             this.createdAt = room.getCreatedAt();
             this.updatedAt = room.getUpdatedAt();
         }
+
+        public Response(Long id, String name, String lastMessage, LocalDateTime lastMessageTime, LocalDateTime createdAt) {
+            this.id = id;
+            this.name = name;
+            this.lastMessage = lastMessage;
+            this.lastMessageTime = lastMessageTime;
+            this.createdAt = createdAt;
+        }
     }
 
     @Data
@@ -33,7 +43,7 @@ public class RoomDto {
         @NotBlank(message = "채팅방 이름은 필수입니다.")
         private String name;
         @NotEmpty(message = "참가할 회원 목록 리스트는 필수입니다.")
-        List<String> usernames;
+        List<Long> memberIds;
 
         public Room toEntity() {
             return new Room(name);

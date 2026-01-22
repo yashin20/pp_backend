@@ -23,7 +23,7 @@ public class TestMethodService {
     final private RoomRepository roomRepository;
 
     /**
-     * FRIENDSHIP CREATE METHOD
+     * 친구 관계 생성 메서드
      */
     @Transactional
     public void testCreateFriendShip(String ownerUsername, String friendUsername, FriendShipStatus status) {
@@ -36,6 +36,17 @@ public class TestMethodService {
         //2. 역방향 관계 생성
         FriendShip reverse = new FriendShip(friend, owner, status);
         friendShipRepository.save(reverse);
+    }
+
+    //친구 요청 보내기 (A -> B)
+    @Transactional
+    public void testCreateAtoB(String A, String B, FriendShipStatus status) {
+        Member owner = findMemberByUsername(A);
+        Member friend = findMemberByUsername(B);
+
+        //1. 정방향 관계 생성
+        FriendShip forward = new FriendShip(owner, friend, status);
+        friendShipRepository.save(forward);
     }
 
     //1. 메시지 생성

@@ -35,16 +35,6 @@ public class MemberDto {
             this.updatedAt = member.getUpdatedAt();
             this.role = member.getMemberRole().toString();
         }
-
-//        private String formatTime(LocalDateTime dateTime) {
-//            if (dateTime == null) {
-//                return null; // 또는 빈 문자열 ""
-//            }
-//
-//            //2022-02-22 11:30
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.KOREA);
-//            return dateTime.format(formatter);
-//        }
     }
 
     @Data
