@@ -99,8 +99,15 @@ public class FriendShipApiController {
         FriendShipDto.Response response = friendShipService.acceptFriendShipRequest(request);
         return ResponseEntity.ok(response);
     }
-
-    /** 3. FriendShip 삭제
+    /** 2-3. 친구 차단하기
+     * DELETE - /api/friends/block
+     */
+    @PostMapping("/block")
+    public ResponseEntity<FriendShipDto.Response> blockFriendShip(@Valid @RequestBody FriendShipDto.Request request) {
+        FriendShipDto.Response response = friendShipService.blockMember(request);
+        return ResponseEntity.ok(response);
+    }
+    /** 2-4. 친구 삭제하기
      * DELETE - /api/friends/delete
      */
     @DeleteMapping("/delete")

@@ -224,6 +224,7 @@ public class FriendShipService {
      *
      * FriendShip(owner: A, friend: B, status: BLOCKED) 만 존재하게 됨.
      */
+    @Transactional
     public FriendShipDto.Response blockMember(FriendShipDto.Request request) {
         Long blockerId = request.getOwnerId();
         Long blockedId = request.getFriendId();
@@ -271,6 +272,7 @@ public class FriendShipService {
      * FriendShip(owner: A, friend: B, status: ACCEPTED) -> 삭제!
      * FriendShip(owner: B, friend: A, status: ACCEPTED) -> 삭제!
      */
+    @Transactional
     public void deleteFriendShip(FriendShipDto.Request request) {
         Long ownerId = request.getOwnerId();
         Long targetId = request.getFriendId();
