@@ -53,7 +53,6 @@ public class RoomApiController {
     public ResponseEntity<List<RoomDto.Response>> getRoomsByUsername(
             @AuthenticationPrincipal MemberDetails memberDetails) {
 
-//        String username = memberDetails.getUsername();
         List<RoomDto.Response> rooms = roomService.getRoomsByUsername(memberDetails.getId());
         return ResponseEntity.ok(rooms);
     }

@@ -43,6 +43,9 @@ dependencies {
 	// Redis 연동을 위한 핵심 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	//Email 발송 위함
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 
 
 	compileOnly 'org.projectlombok:lombok'

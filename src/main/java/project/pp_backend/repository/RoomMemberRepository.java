@@ -1,6 +1,8 @@
 package project.pp_backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import project.pp_backend.entity.RoomMember;
 
 import java.util.List;
@@ -35,4 +37,9 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     long countByMemberId(Long memberId);
 
     List<RoomMember> findByRoomIdAndMemberIdIn(Long roomId, List<Long> memberIds);
+
+
+
+    @Query("SELECT rm.member.username FROM RoomMember rm WHERE rm.room.id = :roomId")
+    List<String> findUsernamesByRoomId(@Param("roomId") Long roomId);
 }

@@ -101,6 +101,26 @@ public class FriendShipService {
 
 
     /** ============== 2. 관계 생성 로직 ============== **/
+
+    /****
+     * 닉네임 기반 친구 신청 로직
+     */
+    @Transactional
+    public FriendShipDto.Response sendFriendShipRequestByNickname(FriendShipDto.SendNicknameRequest sendNicknameRequest) {
+        //1. 닉네임으로 상대방 Member 찾기 (없으면 404 에러)
+        Member target = memberRepository.findByNickname(sendNicknameRequest.getTargetNickname())
+                .orElseThrow(() -> new DataNotFoundException("해당 닉네임을 가진 사용자가 존재하지 않습니다."));
+
+        //2. DTO 생성
+        FriendShipDto.Request request = FriendShipDto.Request
+                .builder()
+                .ownerId(sendNicknameRequest.getOwnerId())
+                .friendId(target.getId())
+                .build();
+
+        return sendFriendShipRequest(request);
+    }
+
     /**
      * 2-1. 친구 신청 로직 (A -> B)
      * - FriendShip(owner: A, friend: B, status: PENDING) 생성 목표

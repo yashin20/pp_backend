@@ -1,7 +1,9 @@
 package project.pp_backend.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import project.pp_backend.entity.FriendShip;
 import project.pp_backend.entity.FriendShipStatus;
 import project.pp_backend.entity.Member;
@@ -37,6 +39,13 @@ public class FriendShipDto {
     public static class Request {
         private Long ownerId;
         private Long friendId;
+    }
+
+    @Data
+    @Builder
+    public static class SendNicknameRequest {
+        private Long ownerId;
+        private String targetNickname;
     }
 
 }

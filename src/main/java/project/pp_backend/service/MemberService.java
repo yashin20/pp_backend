@@ -71,6 +71,19 @@ public class MemberService {
         }
     }
 
+    //"nickname" 중복 검사 메서드(회원가입, 회원 정보 수정)
+    public boolean isNicknameDuplicated(String nickname) {
+        return memberRepository.findByNickname(nickname).isPresent();
+    }
+    //"username" 중복 검사 메서드(회원가입)
+    public boolean isUsernameDuplicated(String username) {
+        return memberRepository.findByUsername(username).isPresent();
+    }
+    //"email" 중복 검사 메서드(회원가입, 회원 정보 수정)
+    public boolean isEmailDuplicated(String email) {
+        return memberRepository.findByEmail(email).isPresent();
+    }
+
 
     //2-1. 회원 정보 조회 (id 기반)
     public MemberDto.Response getMemberById(Long id) {
@@ -163,5 +176,6 @@ public class MemberService {
         memberRepository.delete(member);
         return username;
     }
+
 
 }

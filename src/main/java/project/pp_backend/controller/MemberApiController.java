@@ -1,6 +1,9 @@
 package project.pp_backend.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -100,6 +103,38 @@ public class MemberApiController {
 
         //204 No Content: 성공적 삭제 + 반환할 데이터가 없음 의미
         return ResponseEntity.noContent().build();
+    }
+
+
+    /**
+     * 5-1. 회원 nickname 중복 검사
+     * GET - /api/members/check-nickname
+     * @return boolean (중복 여부)
+     */
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestParam @NotBlank @Size(min = 4, max = 12) String nickname) {
+        boolean isDuplicated = memberService.isNicknameDuplicated(nickname);
+        return ResponseEntity.ok(isDuplicated);
+    }
+    /**
+     * 5-2. 회원 username 중복 검사
+     * GET - /api/members/check-username
+     * @return boolean (중복 여부)
+     */
+    @GetMapping("/check-username")
+    public ResponseEntity<Boolean> checkUsername(@RequestParam @NotBlank @Size(min = 6, max = 12) String username) {
+        boolean isDuplicated = memberService.isUsernameDuplicated(username);
+        return ResponseEntity.ok(isDuplicated);
+    }
+    /**
+     * 5-3. 회원 email 중복 검사
+     * GET - /api/members/check-email
+     * @return boolean (중복 여부)
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity<Boolean> checkEmail(@RequestParam @NotBlank @Email String email) {
+        boolean isDuplicated = memberService.isEmailDuplicated(email);
+        return ResponseEntity.ok(isDuplicated);
     }
 
 

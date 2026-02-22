@@ -90,11 +90,6 @@ public class RoomService {
     }
 
     //2-2. 채팅방 목록 조회 (회원이 참가중인 채팅방 목록)
-//    public List<RoomDto.Response> getRoomsByUsername(String username) {
-//        return roomMemberRepository.findByMemberUsername(username).stream()
-//                .map(roomMember -> new RoomDto.Response(roomMember.getRoom()))
-//                .collect(Collectors.toList());
-//    }
     public List<RoomDto.Response> getRoomsByUsername(Long memberId) {
         return roomRepository.findMyRoomsWithLastMessage(memberId);
     }
@@ -260,5 +255,10 @@ public class RoomService {
                 ).stream()
                 .map(RoomDto.Response::new)
                 .toList();
+    }
+
+    //9. 특정 채팅방에 참여중인 회원 username 리스트 조회
+    public List<String> findParticipantUsernamesByRoomId(Long roomId) {
+        return roomMemberRepository.findUsernamesByRoomId(roomId);
     }
 }

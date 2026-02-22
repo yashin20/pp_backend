@@ -74,18 +74,5 @@ public class StompChannelInterceptor implements ChannelInterceptor {
             // 예외 발생 시 연결 거부
             return null;
         }
-//        String jwtToken = jwtTokenOptional
-//                .filter(token -> token.startsWith(BEARER_))
-//                .map(token -> token.substring(BEARER_.length()))
-//                .filter(token -> jwtTokenProvider.validateToken(token)) //토큰의 유효성(만료) 검증(T/F)
-//                .orElseThrow(() -> new RuntimeException("Invalid token"));
-//        log.info("[test] jwtToken: {}", jwtToken);
-//
-//        Authentication authentication = jwtTokenProvider.getAuthentication(jwtToken);
-//        accessor.setUser(authentication);
-//        log.info("[test] accessor.getUser(): {}", accessor.getUser());
-//
-//        log.info("[test] message: {}", message);
-//        return message;
     }
 }

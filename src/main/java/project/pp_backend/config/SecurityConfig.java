@@ -26,6 +26,10 @@ public class SecurityConfig {
             "/ws-stomp/**", //WebSocket 연결 엔드포인트
             "/api/auth/**", //인증 엔드포인트
             "/api/members/register",
+            "/api/members/register",
+            "/api/members/check-nickname",
+            "/api/members/check-username",
+            "/api/members/check-email",
             "/api/test/**"
     };
 

@@ -83,6 +83,21 @@ public class FriendShipApiController {
 
 
 
+    /**
+     * 2-*. 닉네임을 통한 친구 요청 보내기
+     * POST - /api/friends/send-by-nickname
+     * Request Parameter: myId(나의 ID), nickname(상대방 닉네임)
+     */
+    @PostMapping("/send-by-nickname")
+    public ResponseEntity<FriendShipDto.Response> sendFriendRequestByNickname(
+            @Valid @RequestBody FriendShipDto.SendNicknameRequest request) {
+
+        // Service에서 이전에 만든 래퍼 메서드를 호출합니다.
+        FriendShipDto.Response response = friendShipService.sendFriendShipRequestByNickname(request);
+        return ResponseEntity.ok(response);
+    }
+
+
     /** 2-1. 친구 요청 보내기
      * POST - /api/friends/send
      */

@@ -43,7 +43,7 @@ public class MemberDto {
 
         @NotBlank(message = "아이디는 필수 입력 항목입니다.")
         @Size(min = 6, max = 12, message = "아이디는 6~12자리 입니다.")
-        @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "아이디는 영문자와 숫자만 가능합니다.")
+        @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "아이디는 영문, 숫자와 특수문자 '_'만 가능합니다.")
         private String username;
 
         @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")

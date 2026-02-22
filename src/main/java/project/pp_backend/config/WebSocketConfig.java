@@ -16,6 +16,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private static final String ENDPOINT = "/ws-stomp";
     private static final String SIMPLE_BROKER = "/sub";
     private static final String PUBLISH = "/pub";
+    private static final String USER_DESTINATION = "/user";
 
     //STOMP 연결 시 JWT 인증을 위한 인터셉터 주입
     private final StompChannelInterceptor stompChannelInterceptor;
@@ -27,9 +28,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         //(클라이언트 -> 서버) 클라이언트가 구독할때 사용하는 주소(Prefix)
-        registry.enableSimpleBroker(SIMPLE_BROKER);
+        registry.enableSimpleBroker(SIMPLE_BROKER, "/queue");
         //(클라이언트 -> 서버) 클라이언트가 서버로 메시지를 보낼때 사용하는 prefix
         registry.setApplicationDestinationPrefixes(PUBLISH);
+
+        //특정 사용자에게 보낼 때 사용할 prefix 설정 ("/user")
+        registry.setUserDestinationPrefix(USER_DESTINATION);
     }
 
     /**
@@ -40,7 +44,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //WebSocket 연결 엔드포인트: /ws-stomp
         registry.addEndpoint(ENDPOINT)
                 .setAllowedOriginPatterns("*");
-//                .withSockJS();
     }
 
     /**

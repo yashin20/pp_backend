@@ -15,6 +15,7 @@ public class RoomDto {
     public static class Response {
         private Long id;
         private String name;
+        private Long participantCount; //채팅방 참가자 수
         private String lastMessage;
         private LocalDateTime lastMessageTime;
         private LocalDateTime createdAt;
@@ -28,9 +29,10 @@ public class RoomDto {
             this.updatedAt = room.getUpdatedAt();
         }
 
-        public Response(Long id, String name, String lastMessage, LocalDateTime lastMessageTime, LocalDateTime createdAt) {
+        public Response(Long id, String name, Long participantCount, String lastMessage, LocalDateTime lastMessageTime, LocalDateTime createdAt) {
             this.id = id;
             this.name = name;
+            this.participantCount = participantCount;
             this.lastMessage = lastMessage;
             this.lastMessageTime = lastMessageTime;
             this.createdAt = createdAt;

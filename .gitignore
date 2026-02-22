@@ -38,3 +38,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+# Data Initialization file (Sensitive data)
+**/config/DataInitializer.java
