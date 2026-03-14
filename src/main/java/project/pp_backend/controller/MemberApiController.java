@@ -5,13 +5,19 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import project.pp_backend.dto.MemberDto;
 import project.pp_backend.service.MemberService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/members")
@@ -19,6 +25,12 @@ import project.pp_backend.service.MemberService;
 public class MemberApiController {
 
     private final MemberService memberService;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Value("${file.url-prefix.profile}")
+    private String profileUrlPrefix;
 
     /**
      * 1. 회원가입 엔드포인트
@@ -135,6 +147,29 @@ public class MemberApiController {
     public ResponseEntity<Boolean> checkEmail(@RequestParam @NotBlank @Email String email) {
         boolean isDuplicated = memberService.isEmailDuplicated(email);
         return ResponseEntity.ok(isDuplicated);
+    }
+
+
+    /**
+     * 6. 프로필 이미지 업로드
+     * GET - /api/members/profile-image
+     * @return 안내 메시지
+     */
+    @PostMapping("/profile-image")
+    public ResponseEntity<?> uploadProfileImage(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("file") MultipartFile file) {
+
+        // 1. DB 저장된 파일명 ("uuid.png")
+        String fileName = memberService.updateProfileImage(userDetails.getUsername(), file);
+
+        // 2. client 가 즉시 접근 가능한 경로 ("/uploads/profiles/uuid.png")
+        String fullPath = profileUrlPrefix + fileName;
+
+        return ResponseEntity.ok(Map.of(
+                "message", "프로필 이미지가 성공적으로 변경되었습니다.",
+                "profileImage", fullPath
+        ));
     }
 
 

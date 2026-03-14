@@ -45,6 +45,12 @@ public class RoomService {
         Member roomOwner = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DataNotFoundException("회원을 찾을 수 없습니다. 채팅방을 생성할 수 없습니다."));
 
+        //공백 제거 및 최종 유효성 검사
+        String trimmedName = request.getName().trim();
+        if (trimmedName.isEmpty()) {
+            throw new IllegalArgumentException("채팅방 이름이 유효하지 않습니다.");
+        }
+
         //2. 회원당 채팅방 생성 개수 제한 (쿼리 2회: COUNT)
         long existingRoomCount = roomMemberRepository.countByMemberId(roomOwner.getId());
         if (existingRoomCount >= MAX_ROOM_CREATION_LIMIT) {

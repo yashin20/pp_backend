@@ -26,6 +26,8 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MemberRole memberRole;
 
+    private String profileImage; //프로필 파일명
+
 
     //회원 삭제시 메시지도 모두 삭제
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -45,4 +47,7 @@ public class Member extends BaseEntity {
     public void updatePassword(String encodedPassword) {this.password = encodedPassword;}
     public void updateNickname(String nickname) {this.nickname = nickname;}
     public void updateEmail(String email) {this.email = email;}
+
+    /*Profile Image Update*/
+    public void updateProfileImage(String fileName) {this.profileImage = fileName;}
 }

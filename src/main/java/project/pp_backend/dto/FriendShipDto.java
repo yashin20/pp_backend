@@ -20,16 +20,28 @@ public class FriendShipDto {
         private FriendShipStatus status;
         private String ownerNickname;
         private String friendNickname;
+
+        private String ownerProfileImage;
+        private String friendProfileImage;
+
         private LocalDateTime createdAt;
 
         //Entity -> Dto
-        public Response(FriendShip friendShip) {
+        public Response(FriendShip friendShip, String prefix) {
             this.id = friendShip.getId();
             this.ownerId = friendShip.getOwner().getId();
             this.friendId = friendShip.getFriend().getId();
             this.status = friendShip.getStatus();
             this.ownerNickname = friendShip.getOwner().getNickname();
             this.friendNickname = friendShip.getFriend().getNickname();
+
+            this.ownerProfileImage = (friendShip.getOwner().getProfileImage() != null)
+                    ? prefix + friendShip.getOwner().getProfileImage()
+                    : null;
+            this.friendProfileImage = (friendShip.getFriend().getProfileImage() != null)
+                    ? prefix + friendShip.getFriend().getProfileImage()
+                    : null;
+
             this.createdAt = friendShip.getCreatedAt();
         }
     }

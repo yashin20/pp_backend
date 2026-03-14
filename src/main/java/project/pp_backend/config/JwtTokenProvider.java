@@ -105,6 +105,25 @@ public class JwtTokenProvider {
     /**
      * 3. 토큰의 유효성을 검증합니다.
      */
+//    public boolean validateToken(String token) {
+//        try {
+//            Jwts.parser()
+//                    .setSigningKey(key)
+//                    .build()
+//                    .parseClaimsJws(token);
+//            return true;
+//        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+//            log.info("잘못된 JWT 서명입니다.", e);
+//        } catch (ExpiredJwtException e) {
+//            log.info("만료된 JWT 토큰입니다.", e);
+//        } catch (UnsupportedJwtException e) {
+//            log.info("지원되지 않는 JWT 토큰입니다.", e);
+//        } catch (IllegalArgumentException e) {
+//            log.info("JWT 토큰이 잘못되었습니다.", e);
+//        }
+//        return false;
+//    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -112,16 +131,13 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.", e);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.", e);
-        } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.", e);
-        } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.", e);
+            log.info("만료된 JWT 토큰입니다.");
+            throw e; // 💡 여기서 throw를 해야 Filter에서 캐치할 수 있습니다.
+        } catch (Exception e) {
+            log.info("JWT 검증 실패: {}", e.getMessage());
+            throw new JwtException(e.getMessage());
         }
-        return false;
     }
 
     private Claims parseClaims(String accessToken) {

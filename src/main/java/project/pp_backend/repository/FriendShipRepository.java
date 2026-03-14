@@ -41,9 +41,17 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, Long> {
     );
 
     //A 가 속한 모든 관계를 찾기 위함
+//    @Query("SELECT fs FROM FriendShip fs " +
+//            "WHERE fs.owner.id = :memberId OR fs.friend.id = :memberId")
+//    List<FriendShip> findAllByMemberId(@Param("memberId") Long memberId);
+    //'owner' 와 'friend' 정보가 한번에 조회
+    //A(memberId)가 속한 모든 관계의 회원(Member)정보를 한번에 가져옴.
     @Query("SELECT fs FROM FriendShip fs " +
+            "JOIN FETCH fs.owner " +
+            "JOIN FETCH fs.friend " +
             "WHERE fs.owner.id = :memberId OR fs.friend.id = :memberId")
-    List<FriendShip> findAllByMemberId(@Param("memberId") Long memberId);
+    List<FriendShip> findAllByMemberIdWithMembers(@Param("memberId") Long memberId);
+
 
     Optional<FriendShip> findByOwnerAndFriend(Member owner, Member friend);
 

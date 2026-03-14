@@ -1,6 +1,7 @@
 package project.pp_backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.pp_backend.dto.FriendShipDto;
@@ -23,6 +24,9 @@ public class FriendShipService {
     final private FriendShipRepository friendShipRepository;
     final private MemberRepository memberRepository;
 
+    @Value("${file.url-prefix.profile}")
+    private String profileUrlPrefix;
+
 
     /** ============== 1. 조회 ============== **/
 
@@ -36,9 +40,9 @@ public class FriendShipService {
                 .orElseThrow(() -> new DataNotFoundException("사용자를 찾을 수 없습니다."));
 
         //2. 획득한 ID로 관계 조회
-        return friendShipRepository.findAllByMemberId(memberId)
+        return friendShipRepository.findAllByMemberIdWithMembers(memberId)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -48,7 +52,7 @@ public class FriendShipService {
     public FriendShipDto.Response getFriendShipById(Long id) {
         FriendShip friendShip = friendShipRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("존재하지 않는 관계 입니다. : " + id));
-        return new FriendShipDto.Response(friendShip);
+        return new FriendShipDto.Response(friendShip, profileUrlPrefix);
     }
 
     /**
@@ -59,7 +63,7 @@ public class FriendShipService {
 
         return friendShipRepository.findByOwnerAndStatus(member, FriendShipStatus.ACCEPTED)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -71,7 +75,7 @@ public class FriendShipService {
 
         return friendShipRepository.findByFriendAndStatus(member, FriendShipStatus.PENDING)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -83,7 +87,7 @@ public class FriendShipService {
 
         return friendShipRepository.findByOwnerAndStatus(member, FriendShipStatus.PENDING)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -95,7 +99,7 @@ public class FriendShipService {
 
         return friendShipRepository.findByOwnerAndStatus(member, FriendShipStatus.BLOCKED)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -188,7 +192,7 @@ public class FriendShipService {
         //3. (A -> B, PENDING) 생성
         FriendShip newRequest = new FriendShip(requester, target, FriendShipStatus.PENDING);
         FriendShip saved = friendShipRepository.save(newRequest);
-        return new FriendShipDto.Response(saved);
+        return new FriendShipDto.Response(saved, profileUrlPrefix);
     }
 
     /**
@@ -234,7 +238,7 @@ public class FriendShipService {
         FriendShip newFriendShip = new FriendShip(accepter, requester, FriendShipStatus.ACCEPTED);
         friendShipRepository.save(newFriendShip); //INSERT
 
-        return new FriendShipDto.Response(newFriendShip);
+        return new FriendShipDto.Response(newFriendShip, profileUrlPrefix);
     }
 
     /**
@@ -282,7 +286,7 @@ public class FriendShipService {
         }
 
         // 4. 결과 반환 (A -> B, BLOCKED)
-        return new FriendShipDto.Response(blockedFriendShip);
+        return new FriendShipDto.Response(blockedFriendShip, profileUrlPrefix);
     }
 
 
@@ -318,7 +322,7 @@ public class FriendShipService {
     public List<FriendShipDto.Response> searchFriendShipForOwner(String ownerUsername, String friendNicknameKeyword) {
         return friendShipRepository.findByOwnerUsernameAndFriendNicknameContaining(ownerUsername, friendNicknameKeyword)
                 .stream()
-                .map(FriendShipDto.Response::new)
+                .map(fs -> new FriendShipDto.Response(fs, profileUrlPrefix))
                 .toList();
     }
 

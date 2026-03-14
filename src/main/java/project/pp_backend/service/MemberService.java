@@ -1,10 +1,12 @@
 package project.pp_backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import project.pp_backend.dto.MemberDto;
 import project.pp_backend.entity.Member;
 import project.pp_backend.exception.DataAlreadyExistsException;
@@ -17,6 +19,10 @@ import project.pp_backend.repository.MemberRepository;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileService fileService;
+
+    @Value("${file.url-prefix.profile}")
+    private String profileUrlPrefix;
 
     //1. 회원가입 로직
     @Transactional
@@ -44,7 +50,7 @@ public class MemberService {
         Member savedMember = memberRepository.save(newMember);
 
         //1-5. responseDto 타입 반환
-        return new MemberDto.Response(savedMember);
+        return new MemberDto.Response(savedMember, profileUrlPrefix);
     }
 
     //중복검사 메서드
@@ -92,7 +98,7 @@ public class MemberService {
                 .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
 
         //2. return DTO
-        return new MemberDto.Response(member);
+        return new MemberDto.Response(member, profileUrlPrefix);
     }
     //2-1. 회원 정보 조회 (username 기반)
     public MemberDto.Response getMemberByUsername(String username) {
@@ -101,7 +107,7 @@ public class MemberService {
                 .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
 
         //2. return DTO
-        return new MemberDto.Response(member);
+        return new MemberDto.Response(member, profileUrlPrefix);
     }
 
     //3. 회원 정보 수정
@@ -129,7 +135,7 @@ public class MemberService {
         }
 
         //4. 변경된 회원 정보 반환
-        return new MemberDto.Response(member);
+        return new MemberDto.Response(member, profileUrlPrefix);
     }
 
     //3-2. 비밀번호 수정 메서드
@@ -175,6 +181,36 @@ public class MemberService {
         //2. 회원 삭제
         memberRepository.delete(member);
         return username;
+    }
+
+
+    /**
+     * 프로필 이미지 업데이트 로직
+     * @param username: 현재 로그인한 사용자의 ID
+     * @param file: Flutter에서 넘어온 이미지 파일
+     */
+    @Transactional
+    public String updateProfileImage(String username, MultipartFile file) {
+        // 1. [사용자 조회] DB에서 해당 유저를 찾습니다.
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+
+        // 2. [기존 파일 삭제]
+        // 유저에게 이미 프로필 사진이 있다면, 서버 하드디스크 용량 확보를 위해 옛날 사진을 삭제합니다.
+        if (member.getProfileImage() != null) {
+            fileService.deleteProfile(member.getProfileImage());
+        }
+
+        // 3. [새 파일 저장]
+        // FileService의 storeFile을 호출하여 물리적 저장 후 새 UUID 이름을 받아옵니다.
+        String newFileName = fileService.storeProfile(file);
+
+        // 4. [DB 업데이트]
+        // Member 엔티티의 필드를 변경합니다. @Transactional 덕분에 메서드 종료 시 자동 반영(Dirty Check)됩니다.
+        member.updateProfileImage(newFileName);
+
+        // 5. 나중에 Flutter에서 확인하기 편하도록 바뀐 파일명을 반환합니다.
+        return newFileName;
     }
 
 

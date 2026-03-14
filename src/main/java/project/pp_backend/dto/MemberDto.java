@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import project.pp_backend.entity.Member;
 import project.pp_backend.entity.MemberRole;
 
@@ -17,6 +18,7 @@ public class MemberDto {
         private String username;
         private String nickname;
         private String email;
+        private String profileImage;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
@@ -26,11 +28,14 @@ public class MemberDto {
 
         private String role;
 
-        public Response(Member member) {
+        public Response(Member member, String profileUrlPrefix) {
             this.id = member.getId();
             this.username = member.getUsername();
             this.nickname = member.getNickname();
             this.email = member.getEmail();
+            this.profileImage = (member.getProfileImage() != null)
+                    ? profileUrlPrefix + member.getProfileImage()
+                    : null;
             this.createdAt = member.getCreatedAt();
             this.updatedAt = member.getUpdatedAt();
             this.role = member.getMemberRole().toString();

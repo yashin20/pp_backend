@@ -20,6 +20,7 @@ public class MessageDto {
         private MessageType type;
         private Long memberId;
         private String nickname;
+        private String profileImage;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -27,13 +28,18 @@ public class MessageDto {
         private String recipientUsername;
 
         //Entity -> ResponseDto
-        public Response(Message message) {
+        public Response(Message message, String prefix) {
             this.id = message.getId();
             this.roomId = message.getRoom().getId();
             this.content = message.getContent();
             this.type = message.getType();
             this.memberId = message.getMember().getId();
             this.nickname = message.getMember().getNickname();
+
+            this.profileImage = (message.getMember().getProfileImage() != null)
+                    ? prefix + message.getMember().getProfileImage()
+                    : null;
+
             this.createdAt = message.getCreatedAt();
             this.updatedAt = message.getUpdatedAt();
 

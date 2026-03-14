@@ -16,3 +16,18 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
+
+  # 업로드 파일 크기 관련 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+file:
+  upload-dir: C:/SpringBoot/project/pp_backend/pp_backend/uploads/ # 공통 루트 경로
+  profile-dir: ${file.upload-dir}profiles/ #프로필 사진 저장 경로
+  chat-dir: ${file.upload-dir}chats/ #채팅 사진 파일 저장 경로
+
+  url-prefix:
+    profile: /uploads/profiles/
+    chat: /uploads/chats/

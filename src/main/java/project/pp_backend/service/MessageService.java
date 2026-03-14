@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import project.pp_backend.dto.MessageDto;
 import project.pp_backend.entity.*;
 import project.pp_backend.exception.DataNotFoundException;
@@ -25,12 +26,16 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
     private final RoomRepository roomRepository;
+    private final FileService fileService;
 
     //message 개수 임계값 (100개)
     @Value("${chat.limits.max-messages-per-room}")
     private int MESSAGE_COUNT_THRESHOLD;
     @Value("${chat.limits.slice-size}")
     private int MESSAGE_SLICE_SIZE;
+
+    @Value("${file.url-prefix.profile}")
+    private String profileUrlPrefix;
 
     //1. 메시지 생성
     @Transactional
@@ -52,8 +57,14 @@ public class MessageService {
         }
 
         //2. 메시지 엔티티 생성
-        MessageType determinedType = (recipient != null) && (request.getType() != null) ? MessageType.WHISPER : MessageType.CHAT;
+//        MessageType determinedType = (recipient != null) && (request.getType() != null) ? MessageType.WHISPER : MessageType.CHAT;
+        MessageType determinedType = request.getType(); // 기본적으로 클라이언트가 보낸 타입(CHAT, IMAGE 등)을 따름
 
+        if (recipient != null) {
+            determinedType = MessageType.WHISPER; // 수신자가 있으면 강제로 귓속말 타입
+        } else if (determinedType == null) {
+            determinedType = MessageType.CHAT;    // 아무것도 없으면 일반 채팅
+        }
         Message message = Message.builder()
                 .content(request.getContent())
                 .type(determinedType)
@@ -65,8 +76,12 @@ public class MessageService {
         //3. DB 저장
         messageRepository.save(message);
 
-        return new MessageDto.Response(message);
+        // 4. 메시지 개수 관리 (100개 넘으면 오래된 것 삭제)
+//        cleanupOldMessages(roomId);
+
+        return new MessageDto.Response(message, profileUrlPrefix);
     }
+
 
 
     /**
@@ -96,7 +111,7 @@ public class MessageService {
 
         //3. DTO 변환
         return messages.stream()
-                .map(MessageDto.Response::new)
+                .map(message -> new MessageDto.Response(message, profileUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -126,7 +141,7 @@ public class MessageService {
         );
 
         // 3. DTO 변환 및 Slice 반환
-        return messageSlice.map(MessageDto.Response::new);
+        return messageSlice.map(message -> new MessageDto.Response(message, profileUrlPrefix));
     }
 
 
@@ -177,23 +192,34 @@ public class MessageService {
 
 
     //3-2. 메시지 삭제(특정 채팅방)
-    @Transactional
-    public void deleteAllMessagesInRoom(String username, Long roomId) {
-        // 1. 방 조회 및 권한 검증
-        Room room = findRoomById(roomId);
+//    @Transactional
+//    public void deleteAllMessagesInRoom(String username, Long roomId) {
+//        // 1. 방 조회 및 권한 검증
+//        Room room = findRoomById(roomId);
+//
+//        // 2. 해당 방의 모든 메시지 삭제
+//        messageRepository.deleteByRoomId(roomId);
+//    }
+//
+//    //3-3. 메시지 삭제(특정 회원 작성)
+//    @Transactional
+//    public void deleteAllMessagesByMember(String username) {
+//        // 1. 회원 조회 (존재하지 않아도 메시지 삭제는 진행 가능하지만, 검증 차원에서 조회)
+//        Member member = findMemberByUsername(username);
+//
+//        // 2. 해당 회원이 작성한 모든 메시지 삭제
+//        messageRepository.deleteByMemberId(member.getId());
+//    }
 
-        // 2. 해당 방의 모든 메시지 삭제
-        messageRepository.deleteByRoomId(roomId);
-    }
+    /**
+     * 4. 이미지 메시지 업로드
+     */
+    public String uploadChatImage(MultipartFile file) {
+        //1. FileService 를 호출하여 물리적 파일 저장 및 UUID 파일명 수령
+        String savedFileName = fileService.storeChatImage(file);
 
-    //3-3. 메시지 삭제(특정 회원 작성)
-    @Transactional
-    public void deleteAllMessagesByMember(String username) {
-        // 1. 회원 조회 (존재하지 않아도 메시지 삭제는 진행 가능하지만, 검증 차원에서 조회)
-        Member member = findMemberByUsername(username);
-
-        // 2. 해당 회원이 작성한 모든 메시지 삭제
-        messageRepository.deleteByMemberId(member.getId());
+        //2. 외부에서 접근 가능한 '상대 경로' 문자열 생성
+        return "/uploads/chats/" + savedFileName;
     }
 
 

@@ -9,11 +9,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import project.pp_backend.config.MemberDetails;
 import project.pp_backend.dto.MessageDto;
 import project.pp_backend.service.MessageService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,6 +39,27 @@ public class MessageApiController {
         MessageDto.Response response = messageService.createMessage(username, roomId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /** 1-2. 이미지 메시지 생성
+     * POST - /api/messages/rooms/{roomId}/image
+     */
+    @PostMapping("/rooms/{roomId}/image")
+    public ResponseEntity<Map<String, String>> uploadChatImage(
+            @PathVariable Long roomId,
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal MemberDetails memberDetails) {
+
+        String username = memberDetails.getUsername();
+
+        //1. 이미지 저장 후 URL 반환받기
+        String imageUrl = messageService.uploadChatImage(file);
+
+        //2. Map 으로 반환
+        HashMap<String, String> response = new HashMap<>();
+        response.put("content", imageUrl);
+
+        return ResponseEntity.ok(response);
     }
 
 //    /** 2. 특정 채팅방 + 회원이 볼수 있는 메시지 조회

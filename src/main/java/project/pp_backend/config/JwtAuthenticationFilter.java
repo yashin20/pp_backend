@@ -1,5 +1,7 @@
 package project.pp_backend.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,13 +29,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         // 2. 토큰 유효성 검사 및 인증 처리
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 3. 토큰에서 인증 객체를 얻어 SecurityContext에 저장
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+//        if (token != null && jwtTokenProvider.validateToken(token)) {
+//            // 3. 토큰에서 인증 객체를 얻어 SecurityContext에 저장
+//            Authentication authentication = jwtTokenProvider.getAuthentication(token);
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+//        }
+
+        try {
+            if (token != null && jwtTokenProvider.validateToken(token)) {
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        } catch (ExpiredJwtException e) {
+            // 💡 토큰 만료 시 401 에러와 메시지를 직접 응답
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "ACCESS_TOKEN_EXPIRED");
+            return; // 필터 체인 중단
+        } catch (JwtException e) {
+            // 기타 JWT 관련 에러 (변조 등)
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "INVALID_TOKEN");
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // 응답을 JSON 형태로 내려주는 헬퍼 메서드
+    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
 
     /**
