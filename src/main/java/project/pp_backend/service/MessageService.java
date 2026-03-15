@@ -36,6 +36,8 @@ public class MessageService {
 
     @Value("${file.url-prefix.profile}")
     private String profileUrlPrefix;
+    @Value("${file.url-prefix.chat}")
+    private String chatUrlPrefix;
 
     //1. 메시지 생성
     @Transactional
@@ -79,7 +81,7 @@ public class MessageService {
         // 4. 메시지 개수 관리 (100개 넘으면 오래된 것 삭제)
 //        cleanupOldMessages(roomId);
 
-        return new MessageDto.Response(message, profileUrlPrefix);
+        return new MessageDto.Response(message, profileUrlPrefix, chatUrlPrefix);
     }
 
 
@@ -111,7 +113,7 @@ public class MessageService {
 
         //3. DTO 변환
         return messages.stream()
-                .map(message -> new MessageDto.Response(message, profileUrlPrefix))
+                .map(message -> new MessageDto.Response(message, profileUrlPrefix, chatUrlPrefix))
                 .collect(Collectors.toList());
     }
 
@@ -141,7 +143,7 @@ public class MessageService {
         );
 
         // 3. DTO 변환 및 Slice 반환
-        return messageSlice.map(message -> new MessageDto.Response(message, profileUrlPrefix));
+        return messageSlice.map(message -> new MessageDto.Response(message, profileUrlPrefix, chatUrlPrefix));
     }
 
 
@@ -219,7 +221,7 @@ public class MessageService {
         String savedFileName = fileService.storeChatImage(file);
 
         //2. 외부에서 접근 가능한 '상대 경로' 문자열 생성
-        return "/uploads/chats/" + savedFileName;
+        return savedFileName;
     }
 
 

@@ -28,16 +28,24 @@ public class MessageDto {
         private String recipientUsername;
 
         //Entity -> ResponseDto
-        public Response(Message message, String prefix) {
+        public Response(Message message, String profilePrefix, String chatPrefix) {
             this.id = message.getId();
             this.roomId = message.getRoom().getId();
-            this.content = message.getContent();
+
+            //메시지 내용 (이미지 파일일 경우 경로 조립)
+            if (this.type == MessageType.IMAGE && message.getContent() != null) {
+                this.content = chatPrefix + message.getContent();
+            } else {
+                this.content = message.getContent();
+            }
+
             this.type = message.getType();
             this.memberId = message.getMember().getId();
             this.nickname = message.getMember().getNickname();
 
+            //프로필 이미지 경로 조립
             this.profileImage = (message.getMember().getProfileImage() != null)
-                    ? prefix + message.getMember().getProfileImage()
+                    ? profilePrefix + message.getMember().getProfileImage()
                     : null;
 
             this.createdAt = message.getCreatedAt();
