@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import project.pp_backend.entity.MessageType;
 import project.pp_backend.entity.Room;
 
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class RoomDto {
         private String name;
         private Long participantCount; //채팅방 참가자 수
         private String lastMessage;
+        private MessageType lastMessageType;
         private LocalDateTime lastMessageTime;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -30,11 +32,12 @@ public class RoomDto {
             this.updatedAt = room.getUpdatedAt();
         }
 
-        public Response(Long id, String name, Long participantCount, String lastMessage, LocalDateTime lastMessageTime, LocalDateTime createdAt) {
+        public Response(Long id, String name, Long participantCount, String lastMessage, MessageType lastMessageType, LocalDateTime lastMessageTime, LocalDateTime createdAt) {
             this.id = id;
             this.name = name;
             this.participantCount = participantCount;
             this.lastMessage = lastMessage;
+            this.lastMessageType = lastMessageType;
             this.lastMessageTime = lastMessageTime;
             this.createdAt = createdAt;
         }

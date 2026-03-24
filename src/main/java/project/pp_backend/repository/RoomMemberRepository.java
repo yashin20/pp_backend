@@ -42,4 +42,12 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
     @Query("SELECT rm.member.username FROM RoomMember rm WHERE rm.room.id = :roomId")
     List<String> findUsernamesByRoomId(@Param("roomId") Long roomId);
+
+
+    /**
+     * 모든 채팅방에 참여 관계를 가져오는 쿼리 (Application 실행시 Redis WarmUp을 위함)
+     * @return : (roomId, username) 의 쌍으로 구성된 리스트
+     */
+    @Query("SELECT rm.room.id, m.username FROM RoomMember rm JOIN rm.member m")
+    List<Object[]> findAllParticipantUsernames();
 }

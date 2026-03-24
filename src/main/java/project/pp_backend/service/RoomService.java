@@ -32,6 +32,7 @@ public class RoomService {
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
     private final RoomMemberRepository roomMemberRepository;
+    private final ChatCacheService chatCacheService; //[Redis] 채팅방 회원 참가 목록 관련 로직
 
     /**
      * 1. 채팅방 생성
@@ -83,6 +84,12 @@ public class RoomService {
         //4-5. RoomMember 엔티티를 배치 저장 (쿼리 5회: Batch INSERT)
         if (!newRoomMembers.isEmpty()) {
             roomMemberRepository.saveAll(newRoomMembers);
+
+            //[Redis] 채팅방 참여 목록 저장
+            List<String> participantUsernames = members.stream()
+                    .map(Member::getUsername)
+                    .toList();
+            chatCacheService.addRoomMembers(room.getId(), participantUsernames);
         }
 
         return new RoomDto.Response(room);
@@ -161,6 +168,9 @@ public class RoomService {
         // 4. 채팅방 삭제
         roomRepository.delete(room);
 
+        //4. [Redis] 방 참가 목록 데이터 삭제
+        chatCacheService.removeRoom(roomId);
+
         return roomId;
     }
 
@@ -183,6 +193,10 @@ public class RoomService {
         //3. RoomMember 엔티티 생성 및 저장 (참가 처리)
         RoomMember roomMember = new RoomMember(room, member);
         roomMemberRepository.save(roomMember);
+
+        //4. Update Redis
+        chatCacheService.addRoomMember(roomId, username);
+
         return new RoomDto.Response(room);
     }
 
@@ -208,6 +222,12 @@ public class RoomService {
 
             // 3-2. 채팅방 삭제
             roomRepository.delete(room);
+
+            //4. [Redis] 방 참가 목록 데이터 삭제
+            chatCacheService.removeRoom(roomId);
+        } else {
+            //4. [Redis] 방이 남아 있다면 나간 사람만 Redis 에서 제거
+            chatCacheService.removeRoomMember(roomId, username);
         }
 
         return roomId;
@@ -246,9 +266,16 @@ public class RoomService {
                 .map(member -> new RoomMember(room, member))
                 .collect(Collectors.toList());
 
+        List<String> newUsernames = newRoomMembers.stream()
+                .map(rm -> rm.getMember().getUsername())
+                .collect(Collectors.toList());
+
         // 5. RoomMember 엔티티를 배치 저장 (쿼리 4회: Batch INSERT)
         if (!newRoomMembers.isEmpty()) {
             roomMemberRepository.saveAll(newRoomMembers);
+
+            // 6. [Redis] Batch Update (실시간 조회용)
+            chatCacheService.addRoomMembers(roomId, newUsernames);
         }
 
         return new RoomDto.Response(room);

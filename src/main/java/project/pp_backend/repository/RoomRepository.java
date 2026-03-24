@@ -42,6 +42,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             "r.name, " +
             "(SELECT COUNT(rm2) FROM RoomMember rm2 WHERE rm2.room = r), " + // 인원수 추가
             "m.content, " +
+            "m.type, " +
             "m.createdAt, " +
             "r.createdAt) " +
             "FROM RoomMember rm " +

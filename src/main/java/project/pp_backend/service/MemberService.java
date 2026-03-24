@@ -1,7 +1,9 @@
 package project.pp_backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,12 @@ public class MemberService {
 
     @Value("${file.url-prefix.profile}")
     private String profileUrlPrefix;
+
+    @Qualifier("userRedisTemplate")
+    private final RedisTemplate<String, Object> userRedisTemplate;
+
+    private static final String CACHE_KEY_PREFIX = "user:profile:";
+
 
     //1. 회원가입 로직
     @Transactional
@@ -134,6 +142,9 @@ public class MemberService {
             member.updateEmail(request.getEmail());
         }
 
+        /** [Redis] Redis 캐시 삭제 **/
+        userRedisTemplate.delete(CACHE_KEY_PREFIX + username);
+
         //4. 변경된 회원 정보 반환
         return new MemberDto.Response(member, profileUrlPrefix);
     }
@@ -164,6 +175,9 @@ public class MemberService {
         String newEncodedPassword = passwordEncoder.encode(request.getNewPassword());
         member.updatePassword(newEncodedPassword);
 
+        /** [Redis] Redis 캐시 삭제 **/
+        userRedisTemplate.delete(CACHE_KEY_PREFIX + username);
+
         // 6. 변경 회원 username 반환
         return username;
     }
@@ -171,15 +185,15 @@ public class MemberService {
     //4. 회원 삭제
     @Transactional
     public String deleteMember(String username) {
-        //1. ID 기반 Member 조회
-//        Member memberToDelete = memberRepository.findById(memberId)
-//                .orElseThrow(() -> new DataNotFoundException("삭제할 회원(Member)을 찾을 수 없음"));
-
         //1. Username 기반 Member 조회
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new DataNotFoundException("회원(Member)을 찾을 수 없음"));
         //2. 회원 삭제
         memberRepository.delete(member);
+
+        /** [Redis] Redis 캐시 삭제 **/
+        userRedisTemplate.delete(CACHE_KEY_PREFIX + username);
+
         return username;
     }
 
@@ -208,6 +222,9 @@ public class MemberService {
         // 4. [DB 업데이트]
         // Member 엔티티의 필드를 변경합니다. @Transactional 덕분에 메서드 종료 시 자동 반영(Dirty Check)됩니다.
         member.updateProfileImage(newFileName);
+
+        /** [Redis] Redis 캐시 삭제 **/
+        userRedisTemplate.delete(CACHE_KEY_PREFIX + username);
 
         // 5. 나중에 Flutter에서 확인하기 편하도록 바뀐 파일명을 반환합니다.
         return newFileName;

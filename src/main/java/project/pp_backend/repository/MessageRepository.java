@@ -86,6 +86,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
      * 내가 차단한 회원의 메시지 제외
      */
     @Query("SELECT m FROM Message m " +
+            "JOIN FETCH m.member " +
             "LEFT JOIN FriendShip fs " +
             "ON fs.owner.id = :userId " +
             "AND fs.friend.id = m.member.id " +
