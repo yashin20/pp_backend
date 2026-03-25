@@ -102,4 +102,32 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             Pageable pageable
     );
 
+
+    /**
+     * 특정 채팅방의 메시지 증분 동기화용 메시지 조회
+     * @param userId : 요청한 사용자 ID (차단 필터링용)
+     * @param roomId : 채팅방 ID
+     * @param lastMessageId : 클라이언트가 보유한 마지막 메시지 ID
+     * @param limit : 한 번에 동기화할 최대 개수 (리소스 최적화)
+     * @return : lastMessageId 이후의 메시지 리스트 (과거 -> 최신순)
+     */
+    @Query(value = "SELECT m FROM Message m " +
+            "JOIN FETCH m.member " +
+            "LEFT JOIN FriendShip fs " +
+            "ON fs.owner.id = :userId " +
+            "AND fs.friend.id = m.member.id " +
+            "AND fs.status = project.pp_backend.entity.FriendShipStatus.BLOCKED " +
+            "WHERE m.room.id = :roomId " +
+            "AND m.id > :lastMessageId " +
+            "AND fs.id IS NULL " +
+            "ORDER BY m.id DESC")
+    List<Message> findMessagesForSync(
+            @Param("userId") Long userId,
+            @Param("roomId") Long roomId,
+            @Param("lastMessageId") Long lastMessageId,
+            Pageable pageable
+    );
+
+    
+
 }

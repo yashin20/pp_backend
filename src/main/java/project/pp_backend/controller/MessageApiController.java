@@ -77,10 +77,10 @@ public class MessageApiController {
 
     /**
      * 특정 채팅방 메시지 조회 (커서 기반 무한 스크롤)
-     * GET /api/messages/rooms/{roomId}?cursor={oldestMessageId}
+     * GET /api/messages/rooms/{roomId}/older?cursor={oldestMessageId}
      * - 채팅방 진입 시 이전 대화 내용을 불러오는 용도
      */
-    @GetMapping("/rooms/{roomId}")
+    @GetMapping("/rooms/{roomId}/older")
     public ResponseEntity<Slice<MessageDto.Response>> getVisibleMessages(
             @PathVariable Long roomId,
             @RequestParam(required = false) Long cursor,
@@ -89,6 +89,25 @@ public class MessageApiController {
         String username = memberDetails.getUsername();
         Slice<MessageDto.Response> messages = messageService.getMessagesByRoomWithCursor(username, roomId, cursor);
         return ResponseEntity.ok(messages);
+    }
+
+    /**
+     * 채팅방 증분 동기화 API
+     * GET /api/messages/rooms/{roomId}/sync?lastId=500
+     */
+    @GetMapping("/rooms/{roomId}/sync")
+    public ResponseEntity<List<MessageDto.Response>> syncMessages(
+            @PathVariable Long roomId,
+            @RequestParam(required = false) Long lastId,
+            @AuthenticationPrincipal MemberDetails memberDetails) {
+
+        List<MessageDto.Response> syncData = messageService.getSyncMessages(
+                memberDetails.getUsername(),
+                roomId,
+                lastId
+        );
+
+        return ResponseEntity.ok(syncData);
     }
 
     /** 3. 단일 메시지 삭제

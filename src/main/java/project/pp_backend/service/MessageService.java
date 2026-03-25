@@ -15,6 +15,7 @@ import project.pp_backend.repository.MemberRepository;
 import project.pp_backend.repository.MessageRepository;
 import project.pp_backend.repository.RoomRepository;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,6 +145,30 @@ public class MessageService {
 
         // 3. DTO 변환 및 Slice 반환
         return messageSlice.map(message -> new MessageDto.Response(message, profileUrlPrefix, chatUrlPrefix));
+    }
+
+    /**
+     * [증분 동기화] 특정 채팅방 메시지 증분 동기화 로직
+     */
+    public List<MessageDto.Response> getSyncMessages(String username, Long roomId, Long lastMessageId) {
+        Member currentUser = findMemberByUsername(username);
+
+        //가장 최근 100개 까지만 우선적으로 불러오기
+        PageRequest limit = PageRequest.of(0, 100);
+
+        List<Message> syncMessages = messageRepository.findMessagesForSync(
+                currentUser.getId(),
+                roomId,
+                lastMessageId != null ? lastMessageId : 0L,
+                limit
+        );
+
+        // DESC 로 1 ~ 1000 개 중 1000 ~ 901 번 까지 가져옴
+        // 앱으로 901 ~ 1000 번 순서로 보내줌
+        return syncMessages.stream()
+                .sorted(Comparator.comparing(Message::getId)) //ID 기준으로 오름차순
+                .map(m -> new MessageDto.Response(m, profileUrlPrefix, chatUrlPrefix))
+                .collect(Collectors.toList());
     }
 
 
